@@ -543,6 +543,75 @@
   [data-cat="experiences"] .category-header, [data-cat="experiences"] .activity-cat-header { border-left: 4px solid var(--experiences); }
   [data-cat="other"] .category-header, [data-cat="other"] .activity-cat-header { border-left: 4px solid var(--other); }
 
+  /* DEEP SESSION PANEL */
+  .deep-session-panel {
+    background: var(--deep);
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-top: 32px;
+    border: 1px solid var(--warm);
+    display: none;
+  }
+  .deep-session-panel.visible { display: block; }
+  .deep-session-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--warm);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .deep-session-subtitle {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .session-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(200,169,110,0.2);
+  }
+  .session-section:last-child { border-bottom: none; margin-bottom: 0; }
+  .session-section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--warm);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .session-section-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--warm-light);
+    font-style: italic;
+  }
+  .session-section-body strong {
+    font-style: normal;
+    color: var(--warm);
+    font-weight: 500;
+  }
+  .deep-session-btn {
+    background: transparent;
+    border: 2px solid var(--warm);
+    color: var(--warm);
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0 auto;
+  }
+  .deep-session-btn:hover { background: var(--warm); color: var(--deep); }
+  .deep-session-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
   .loading-dots::after {
     content: '...';
     animation: dots 1.2s steps(4, end) infinite;
@@ -606,8 +675,20 @@
     <div class="section-subtitle">Define your destination across each area. Your exit criteria are the benchmarks of your future self.</div>
     <div class="categories-grid" id="exit-categories"></div>
 
-    <button class="summary-btn" onclick="generateSummary()">⚡ See My Entry vs Exit Comparison</button>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:28px">
+      <button class="summary-btn" style="margin:0" onclick="generateSummary()">⚡ Entry vs Exit Comparison</button>
+      <button class="summary-btn" style="margin:0;background:transparent;border:2px solid var(--warm);color:var(--warm)" onclick="runDeepSession()">🧠 Full Psychological Profile</button>
+    </div>
     <div id="compare-output"></div>
+    <div class="deep-session-panel" id="deep-session-panel">
+      <div class="deep-session-title">Your Psychological Profile</div>
+      <div class="deep-session-subtitle">A full coach reading across all areas of your life</div>
+      <div id="deep-session-content">
+        <div style="text-align:center;padding:40px;color:var(--muted);font-style:italic">
+          <div class="loading-dots" style="font-size:18px;color:var(--warm)">Your coach is doing a deep read</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ACTIVITIES TAB -->
@@ -836,8 +917,8 @@ function buildCategories(containerId, mode) {
     });
 
     questionsHtml += `
-      <button class="ai-coach-btn" onclick="askCoach('${cat.id}','${mode}',this)">
-        🧭 Ask your coach a follow-up question
+      <button class="ai-coach-btn" onclick="askCoach('${cat.id}','${mode}',this)" id="coach-btn-${mode}-${cat.id}">
+        🧭 Coach: Analyse this area deeply
       </button>
       <div class="ai-response" id="coach-${mode}-${cat.id}"></div>
     </div></div>`;
@@ -868,24 +949,65 @@ function saveAnswer(mode, key, value) {
 
 async function askCoach(catId, mode, btn) {
   const cat = CATEGORIES.find(c => c.id === catId);
-  const qs = QUESTIONS[catId][mode];
-  const answers = qs.map(q => {
-    const key = `${mode}_${catId}_${q.id}`;
-    return `${q.label}: ${state[mode][key] || '(not answered)'}`;
-  }).join('\n');
-
   const responseEl = document.getElementById(`coach-${mode}-${catId}`);
   responseEl.classList.add('visible');
-  responseEl.innerHTML = '<div class="thinking">Your coach is thinking<span class="loading-dots"></span></div>';
+  responseEl.innerHTML = '<div class="thinking">Your coach is reading your answers<span class="loading-dots"></span></div>';
+  btn.disabled = true;
+  btn.textContent = '⏳ Analysing...';
 
-  const prompt = `You are a warm, insightful life coach helping someone plan their ${getYears()}-year life journey.
+  // Gather this category's answers
+  const qs = QUESTIONS[catId][mode];
+  const catAnswers = qs.map(q => {
+    const key = `${mode}_${catId}_${q.id}`;
+    if (q.type === 'rating') {
+      const r = state.ratings[mode][`${catId}_${q.id}`];
+      return r ? `${q.label}: ${r}/10` : null;
+    }
+    const v = state[mode][key];
+    return v && v.trim() ? `${q.label}: ${v.trim()}` : null;
+  }).filter(Boolean).join('\n');
 
-They are filling out their "${mode === 'entry' ? 'current situation' : 'desired future'}" for the "${cat.name}" area of their life.
+  // Also gather cross-category context (all other areas, summarised)
+  const crossContext = CATEGORIES.filter(c => c.id !== catId).map(c => {
+    const as = getCategoryAnswers(mode, c.id);
+    if (as.length === 0) return null;
+    return `${c.name}: ${as.map(a => a.value).join(' / ')}`;
+  }).filter(Boolean).join('\n');
 
-Their answers so far:
-${answers}
+  // And the opposite mode for contrast
+  const oppositeMode = mode === 'entry' ? 'exit' : 'entry';
+  const oppositeAnswers = getCategoryAnswers(oppositeMode, catId).map(a => `${a.label}: ${a.value}`).join('\n');
 
-Ask them ONE powerful, reflective coaching question that will help them go deeper or think more clearly about this area. Be curious, not prescriptive. Keep it to 1-2 sentences. No preamble.`;
+  const prompt = `You are a perceptive, psychologically astute life coach. You read between the lines. You notice what people don't say as much as what they do.
+
+Someone is doing a ${state.years}-year life planning exercise. You are analysing their "${cat.name}" section.
+
+MODE: ${mode === 'entry' ? 'CURRENT REALITY (where they are now)' : 'DESIRED FUTURE (where they want to be)'}
+
+Their answers for this area:
+${catAnswers || '(they have not answered yet — reflect on the absence itself)'}
+
+${oppositeAnswers ? `Their ${oppositeMode === 'entry' ? 'current' : 'desired'} state for this same area:
+${oppositeAnswers}` : ''}
+
+${crossContext ? `Context from other life areas they've filled in:
+${crossContext}` : ''}
+
+Write a rich, multi-part coaching analysis in this exact structure:
+
+**What I notice**
+2-3 observations about their answers — including the specific language they use, what they emphasise, what seems absent or vague. Be specific, not generic. Reference their actual words.
+
+**Patterns & psychology**
+1-2 observations about what this reveals — a belief system, a fear, a story they might be telling themselves, a tension with other life areas. Be honest. Coaches don't just validate.
+
+**What you might be avoiding**
+One direct, compassionate observation about what might be harder to look at here. This could be a contradiction, a sacrifice not yet acknowledged, or a truth not yet named.
+
+**Questions to sit with**
+2 powerful questions — not to answer now, but to carry. Make them specific to their situation, not generic coaching clichés.
+
+Tone: warm but unflinching. Like a coach who genuinely cares AND tells the truth. Maximum 350 words total.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -893,16 +1015,22 @@ Ask them ONE powerful, reflective coaching question that will help them go deepe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
+        max_tokens: 600,
         messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await response.json();
-    const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
-    responseEl.innerHTML = `<div class="thinking">Coach reflection</div>${text}`;
+    const raw = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+    // Format markdown-style bold headers into styled HTML
+    const formatted = raw
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--warm);font-family:DM Sans;font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-top:14px;margin-bottom:4px">$1</strong>')
+      .replace(/\n/g, '<br>');
+    responseEl.innerHTML = `<div class="thinking">Coach analysis — ${cat.name}</div><div style="line-height:1.7">${formatted}</div>`;
   } catch(e) {
-    responseEl.innerHTML = `<div class="thinking">Coach reflection</div>What feels most alive or most stuck for you in this area right now — and what might be underneath that?`;
+    responseEl.innerHTML = `<div class="thinking">Coach analysis</div>I notice something worth sitting with: the way you describe this area tells its own story. What would it mean if the version of you that already lives this future looked back at what you wrote today — what would they say you were still holding onto?`;
   }
+  btn.disabled = false;
+  btn.textContent = '🧭 Coach: Analyse this area deeply';
 }
 
 // ACTIVITIES
@@ -1214,20 +1342,22 @@ async function generateSummary() {
     return `${cat.name} (future): ${answers.map(a => `${a.label}: ${a.value}`).join('; ')}`;
   }).join('\n');
 
-  const prompt = `You are a wise life coach reviewing someone's ${state.years}-year life plan.
+  const prompt = `You are a psychologically astute life coach. You read people's actual words carefully — not just what they say but how they say it, what they avoid, what contradicts, what lights up.
 
-They have filled in their current situation and desired future. Write a brief, insightful coach's reflection (3-4 sentences) that:
-1. Names the most significant transformation they're seeking
-2. Points out a potential tension or blind spot worth considering
-3. Ends with one powerful question
+Someone has completed a ${state.years}-year life planning exercise — both where they are now and where they want to be. Write a coach's summary reflection that covers:
 
-Current situation:
+1. The core transformation arc — what is the essential shift this person is seeking, in their own terms?
+2. The most interesting tension you notice — between two areas, or between what they say they want and how they describe it
+3. Something they haven't named but that seems present in the subtext of their answers
+4. One question that could shift everything for them
+
+Current situation across all areas:
 ${entryStr || '(minimal data)'}
 
-Desired future:
+Desired future across all areas:
 ${exitStr || '(minimal data)'}
 
-Be honest, warm, and thought-provoking. Avoid generic platitudes.`;
+Write in flowing prose, 4-5 sentences. Warm, honest, psychologically specific. Reference their actual answers. No bullet points. No generic coaching language.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1247,6 +1377,112 @@ Be honest, warm, and thought-provoking. Avoid generic platitudes.`;
     console.error('Coach reflection error:', e);
     const el = document.getElementById('summary-ai-response');
     if (el) el.innerHTML = `<div class="thinking">Coach reflection</div>The gap between your current reality and your vision is real — and so is your capacity to close it. The question worth sitting with is: what one belief about yourself would need to change for this future to feel genuinely possible?`;
+  }
+}
+
+async function runDeepSession() {
+  const panel = document.getElementById('deep-session-panel');
+  const contentEl = document.getElementById('deep-session-content');
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  contentEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">
+    <div style="font-family:Cormorant Garamond,serif;font-size:22px;font-style:italic;color:var(--warm-light);margin-bottom:8px">Reading your full story<span class="loading-dots"></span></div>
+    <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase">This takes a moment — your coach is doing a thorough read</div>
+  </div>`;
+
+  // Build full life picture
+  const allEntry = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('entry', cat.id);
+    if (answers.length === 0) return `${cat.name}: (not answered)`;
+    return `${cat.name}:\n${answers.map(a => `  ${a.label}: ${a.value}`).join('\n')}`;
+  }).join('\n\n');
+
+  const allExit = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('exit', cat.id);
+    if (answers.length === 0) return `${cat.name}: (not answered)`;
+    return `${cat.name}:\n${answers.map(a => `  ${a.label}: ${a.value}`).join('\n')}`;
+  }).join('\n\n');
+
+  const prompt = `You are a highly perceptive, psychologically trained life coach. You have studied positive psychology, narrative therapy, motivational interviewing, and Jungian concepts. You read what people write with deep attention — the words they choose, the gaps, the contradictions, the emotional texture underneath.
+
+Someone has completed a full ${state.years}-year life planning exercise. They have answered questions across 7 domains of their life — both their current reality and their desired future.
+
+Your job is to write their psychological profile as a coach — not a therapist, but someone who sees clearly and speaks honestly with warmth.
+
+=== THEIR CURRENT LIFE (Entry) ===
+${allEntry || '(mostly not filled in)'}
+
+=== THEIR DESIRED FUTURE (Exit) ===
+${allExit || '(mostly not filled in)'}
+
+Write a structured psychological profile with these exact sections. Be specific to THEIR words and answers, not generic:
+
+[SECTION: The Story They're Living]
+What narrative or identity is this person currently operating from? What role are they playing? What does their language about their current life reveal about how they see themselves? (3-4 sentences, specific to their answers)
+
+[SECTION: The Story They're Reaching For]
+What does their desired future reveal about who they want to become? What values, needs, or hungers are driving this vision? Is the vision bold or cautious — and what does that tell you? (3-4 sentences)
+
+[SECTION: The Central Tension]
+Where do you notice the most significant gap, contradiction, or tension — either between their current and desired self, or between two different life areas? What might this tension be protecting them from? (3-4 sentences, honest, not harsh)
+
+[SECTION: What's Hiding in Plain Sight]
+What is present in their answers that they may not have consciously noticed — a theme, a fear, an unspoken trade-off, something they're working around? Name it with care. (2-3 sentences)
+
+[SECTION: Their Edge]
+Where is the real work? What is the single shift — in thinking, belief, or action — that would most unlock their journey? Not a to-do item. A shift in who they're being. (2-3 sentences)
+
+[SECTION: Questions to Carry]
+3 questions — not to answer now, but to live with. Make them specific, piercing, and kind. These should feel like they land somewhere real.
+
+Tone throughout: the best coach they've ever had. Warm but truthful. Specific not generic. You are not a cheerleader — you are someone who sees them and tells them what you see.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const raw = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+
+    // Parse the sections
+    const sectionPattern = /\[SECTION:\s*(.+?)\]([\s\S]*?)(?=\[SECTION:|$)/g;
+    let match;
+    let html = '';
+    let found = 0;
+    while ((match = sectionPattern.exec(raw)) !== null) {
+      const title = match[1].trim();
+      const body = match[2].trim()
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      html += `<div class="session-section">
+        <div class="session-section-title">${title}</div>
+        <div class="session-section-body">${body}</div>
+      </div>`;
+      found++;
+    }
+
+    if (found === 0) {
+      // Fallback: just show formatted raw
+      const formatted = raw
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p style="margin-top:16px">')
+        .replace(/\n/g, '<br>');
+      html = `<div class="session-section"><div class="session-section-body"><p>${formatted}</p></div></div>`;
+    }
+
+    contentEl.innerHTML = html;
+  } catch(e) {
+    console.error('Deep session error:', e);
+    contentEl.innerHTML = `<div class="session-section">
+      <div class="session-section-title">A Note From Your Coach</div>
+      <div class="session-section-body">I couldn't complete the full analysis right now — but what I'd invite you to notice is this: you've already done something most people don't. You've sat down and looked honestly at where you are and where you want to go. That gap between those two things? That's not a problem to solve. That's the journey itself.</div>
+    </div>`;
   }
 }
 
