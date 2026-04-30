@@ -697,6 +697,14 @@
     transition: all 0.2s;
   }
   .apikey-status:hover { border-color: var(--warm); color: var(--warm); }
+  .apikey-clear-btn {
+    background: none; border: none;
+    color: var(--clay); font-size: 10px;
+    cursor: pointer; margin-top: 10px;
+    text-decoration: underline;
+    display: none; width: 100%;
+  }
+  .apikey-clear-btn.visible { display: block; }
   .apikey-status .dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: var(--muted);
@@ -734,12 +742,13 @@
     <div class="apikey-modal-body">
       You're running this outside of Claude.ai, so the AI coach features need your Anthropic API key to work.<br><br>
       Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.<br>
-      Your key is stored only in this browser session — never sent anywhere except the Anthropic API.
+      Your key is saved in this browser's local storage — it persists across sessions on this device, and is never sent anywhere except the Anthropic API directly.
     </div>
     <input class="apikey-input" type="password" id="apikey-input" placeholder="sk-ant-..." />
     <div class="apikey-error" id="apikey-error">Please enter a valid API key (starts with sk-ant-)</div>
     <button class="apikey-save-btn" onclick="saveApiKey()">Save & Continue</button>
     <button class="apikey-skip-btn" onclick="skipApiKey()">Skip for now (AI features will be disabled)</button>
+    <button class="apikey-clear-btn" id="apikey-clear-btn" onclick="clearApiKey();hideApiKeyModal()">🗑 Clear saved key</button>
   </div>
 </div>
 
@@ -1565,7 +1574,17 @@ function escapeHtml(str) {
 }
 
 // ── API KEY MANAGEMENT ──────────────────────────────────────
-let _apiKey = null; // session-only, never persisted
+let _apiKey = null;
+
+function loadApiKey() {
+  try {
+    const saved = localStorage.getItem('titw_api_key');
+    if (saved) {
+      _apiKey = saved;
+      updateApiKeyStatus(true);
+    }
+  } catch(e) {}
+}
 
 function isClaudeAI() {
   // Claude.ai handles the key automatically — no modal needed
@@ -1585,8 +1604,19 @@ function getApiHeaders() {
 }
 
 function showApiKeyModal() {
-  document.getElementById('apikey-overlay').classList.remove('hidden');
-  document.getElementById('apikey-input').focus();
+  const overlay = document.getElementById('apikey-overlay');
+  const clearBtn = document.getElementById('apikey-clear-btn');
+  const input = document.getElementById('apikey-input');
+  overlay.classList.remove('hidden');
+  if (_apiKey) {
+    // Show masked version and reveal clear button
+    input.placeholder = '••••••••••••••••' + _apiKey.slice(-4);
+    clearBtn.classList.add('visible');
+  } else {
+    input.placeholder = 'sk-ant-...';
+    clearBtn.classList.remove('visible');
+  }
+  input.focus();
 }
 
 function hideApiKeyModal() {
@@ -1602,8 +1632,16 @@ function saveApiKey() {
   }
   errEl.style.display = 'none';
   _apiKey = input;
+  try { localStorage.setItem('titw_api_key', _apiKey); } catch(e) {}
   updateApiKeyStatus(true);
   hideApiKeyModal();
+}
+
+function clearApiKey() {
+  _apiKey = null;
+  try { localStorage.removeItem('titw_api_key'); } catch(e) {}
+  document.getElementById('apikey-input').value = '';
+  updateApiKeyStatus(false);
 }
 
 function skipApiKey() {
@@ -1615,10 +1653,12 @@ function updateApiKeyStatus(hasKey) {
   const label = document.getElementById('apikey-status-label');
   if (hasKey) {
     btn.classList.add('active');
-    label.textContent = 'API key set';
+    label.textContent = 'Key saved ✓';
+    btn.title = 'API key saved to this browser — click to update or clear';
   } else {
     btn.classList.remove('active');
     label.textContent = 'No API key';
+    btn.title = 'Click to set API key';
   }
 }
 
@@ -1647,7 +1687,8 @@ async function claudeFetch(prompt, maxTokens = 600) {
 // ── INIT ─────────────────────────────────────────────────────
 // Show key modal if not running inside Claude.ai
 loadState();
-if (!isClaudeAI()) {
+loadApiKey();
+if (!isClaudeAI() && !_apiKey) {
   // Small delay so the page renders first
   setTimeout(() => showApiKeyModal(), 600);
 }
