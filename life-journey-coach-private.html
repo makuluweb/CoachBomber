@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>This is the Way</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1612;
+    --parchment: #f5f0e8;
+    --warm: #c8a96e;
+    --warm-light: #e8d9bc;
+    --sage: #7a8c7e;
+    --clay: #b5694a;
+    --deep: #2c2416;
+    --muted: #8a7f70;
+    --surface: #faf7f2;
+    --border: #ddd5c2;
+    --health: #7a8c7e;
+    --relationships: #b5694a;
+    --finance: #c8a96e;
+    --job: #5c7a8a;
+    --family: #8a6c9e;
+    --experiences: #7a6e5a;
+    --other: #9e7a6c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--deep);
+    color: var(--warm-light);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--warm);
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--warm);
+    font-style: italic;
+  }
+
+  .timeline-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--warm-light);
+    letter-spacing: 1px;
+  }
+  .timeline-selector label { text-transform: uppercase; font-size: 11px; opacity: 0.7; }
+  .timeline-selector select {
+    background: transparent;
+    border: 1px solid var(--warm);
+    color: var(--warm);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+  }
+  .timeline-selector select option { background: var(--deep); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--deep);
+    padding: 0 40px;
+    border-bottom: 1px solid var(--warm);
+    gap: 0;
+  }
+  .tab {
+    padding: 16px 32px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--warm-light); }
+  .tab.active { color: var(--warm); border-bottom-color: var(--warm); }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 30px; }
+
+  /* INTRO BANNER */
+  .coach-banner {
+    background: var(--deep);
+    color: var(--warm-light);
+    border-radius: 12px;
+    padding: 28px 36px;
+    margin-bottom: 36px;
+    border-left: 4px solid var(--warm);
+    position: relative;
+  }
+  .coach-banner .coach-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+  .coach-banner p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.6;
+    font-style: italic;
+    color: var(--warm-light);
+  }
+  .coach-banner .coach-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--warm);
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+
+  /* CATEGORY CARDS */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .category-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.3s, transform 0.2s;
+  }
+  .category-card:hover { 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+    transform: translateY(-2px);
+  }
+
+  .category-header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  .category-icon { font-size: 20px; }
+  .category-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .category-toggle {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.3s;
+  }
+  .category-card.open .category-toggle { transform: rotate(180deg); }
+
+  .category-body {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+  }
+  .category-card.open .category-body {
+    max-height: 2000px;
+    padding: 20px 24px 24px;
+  }
+
+  /* QUESTIONS */
+  .question-block { margin-bottom: 20px; }
+  .question-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .question-hint {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .question-input {
+    width: 100%;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .question-input:focus { border-color: var(--warm); }
+  .question-input.single { min-height: unset; height: 44px; resize: none; }
+
+  /* RATING */
+  .rating-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+  .rating-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--parchment);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rating-btn:hover, .rating-btn.selected { 
+    background: var(--warm); 
+    border-color: var(--warm);
+    color: white;
+  }
+  .rating-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  /* AI COACH BUTTON */
+  .ai-coach-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px dashed var(--warm);
+    border-radius: 8px;
+    color: var(--warm);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .ai-coach-btn:hover { background: var(--warm); color: white; }
+
+  .ai-response {
+    background: var(--deep);
+    color: var(--warm-light);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    line-height: 1.6;
+    display: none;
+    border-left: 3px solid var(--warm);
+  }
+  .ai-response.visible { display: block; }
+  .ai-response .thinking { font-size: 12px; font-style: normal; color: var(--warm); font-family: 'DM Sans'; opacity: 0.7; margin-bottom: 6px; }
+
+  /* ACTIVITIES TAB */
+  .activities-intro { margin-bottom: 28px; }
+
+  .activity-category {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .activity-cat-header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    background: var(--surface);
+  }
+  .activity-cat-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .activity-category.open .activity-cat-body { max-height: 3000px; }
+  .activity-cat-inner { padding: 0 24px 24px; }
+
+  /* PATHWAY CARDS */
+  .pathways-section { margin-top: 12px; }
+  .pathways-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .pathway-card {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .pathway-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .pathway-number {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--warm);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pathway-title-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    padding: 4px 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    outline: none;
+  }
+  .pathway-title-input::placeholder { color: var(--muted); font-style: italic; }
+  .remove-pathway {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .remove-pathway:hover { color: var(--clay); }
+
+  .steps-list { list-style: none; margin-bottom: 12px; }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-check {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid var(--warm);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .step-check.done { background: var(--warm); }
+  .step-check.done::after { content: '✓'; color: white; font-size: 11px; }
+  .step-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    padding: 2px 0;
+  }
+  .step-input.done-text { text-decoration: line-through; color: var(--muted); }
+  .step-remove {
+    background: none; border: none;
+    color: var(--border); cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  .step-remove:hover { color: var(--clay); }
+
+  .add-step-btn, .add-pathway-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: none; border: none;
+    color: var(--warm); cursor: pointer;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    padding: 6px 0;
+    transition: opacity 0.2s;
+  }
+  .add-step-btn:hover, .add-pathway-btn:hover { opacity: 0.7; }
+
+  .add-pathway-btn {
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: var(--parchment);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    width: 100%;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  /* TIMELINE VISUAL */
+  .timeline-bar-section { margin: 20px 0 12px; }
+  .timeline-bar-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .timeline-inputs { display: flex; gap: 12px; align-items: center; }
+  .timeline-input {
+    display: flex; flex-direction: column; gap: 4px; flex: 1;
+  }
+  .timeline-input label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .timeline-input select, .timeline-input input {
+    padding: 8px 10px;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+
+  /* PROGRESS OVERVIEW */
+  .progress-overview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .progress-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--deep);
+  }
+  .progress-bars { display: flex; flex-direction: column; gap: 12px; }
+  .progress-row { display: flex; align-items: center; gap: 12px; }
+  .progress-cat-name { width: 120px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .progress-bar-track {
+    flex: 1; height: 8px; background: var(--parchment);
+    border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+  .progress-value { font-size: 12px; color: var(--muted); width: 36px; text-align: right; }
+
+  /* SECTION DIVIDERS */
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 300;
+    color: var(--deep);
+    margin-bottom: 8px;
+  }
+  .section-subtitle {
+    font-size: 14px; color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* HIDDEN TABS */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SUMMARY SECTION */
+  .summary-btn {
+    background: var(--deep);
+    color: var(--warm);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 10px;
+    margin: 28px auto 0;
+  }
+  .summary-btn:hover { background: var(--warm); color: var(--deep); }
+
+  .compare-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .compare-col { }
+  .compare-col-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--deep);
+    border-bottom: 2px solid var(--warm);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .compare-item { font-size: 13px; color: var(--muted); padding: 4px 0; }
+  .compare-item strong { color: var(--ink); }
+
+  /* COLOR STRIPES */
+  [data-cat="health"] .category-header, [data-cat="health"] .activity-cat-header { border-left: 4px solid var(--health); }
+  [data-cat="relationships"] .category-header, [data-cat="relationships"] .activity-cat-header { border-left: 4px solid var(--relationships); }
+  [data-cat="finance"] .category-header, [data-cat="finance"] .activity-cat-header { border-left: 4px solid var(--finance); }
+  [data-cat="job"] .category-header, [data-cat="job"] .activity-cat-header { border-left: 4px solid var(--job); }
+  [data-cat="family"] .category-header, [data-cat="family"] .activity-cat-header { border-left: 4px solid var(--family); }
+  [data-cat="experiences"] .category-header, [data-cat="experiences"] .activity-cat-header { border-left: 4px solid var(--experiences); }
+  [data-cat="other"] .category-header, [data-cat="other"] .activity-cat-header { border-left: 4px solid var(--other); }
+
+  /* DEEP SESSION PANEL */
+  .deep-session-panel {
+    background: var(--deep);
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-top: 32px;
+    border: 1px solid var(--warm);
+    display: none;
+  }
+  .deep-session-panel.visible { display: block; }
+  .deep-session-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--warm);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .deep-session-subtitle {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .session-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(200,169,110,0.2);
+  }
+  .session-section:last-child { border-bottom: none; margin-bottom: 0; }
+  .session-section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--warm);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .session-section-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--warm-light);
+    font-style: italic;
+  }
+  .session-section-body strong {
+    font-style: normal;
+    color: var(--warm);
+    font-weight: 500;
+  }
+  .deep-session-btn {
+    background: transparent;
+    border: 2px solid var(--warm);
+    color: var(--warm);
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0 auto;
+  }
+  .deep-session-btn:hover { background: var(--warm); color: var(--deep); }
+  .deep-session-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* API KEY MODAL */
+  .apikey-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,22,18,0.85);
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .apikey-overlay.hidden { display: none; }
+  .apikey-modal {
+    background: var(--deep);
+    border: 1px solid var(--warm);
+    border-radius: 16px;
+    padding: 40px 44px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+  }
+  .apikey-modal-icon { font-size: 32px; margin-bottom: 12px; }
+  .apikey-modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--warm);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .apikey-modal-body {
+    font-size: 14px;
+    color: var(--warm-light);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    opacity: 0.85;
+  }
+  .apikey-modal-body a { color: var(--warm); text-decoration: underline; }
+  .apikey-input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--warm);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--warm-light);
+    outline: none;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .apikey-input::placeholder { color: var(--muted); letter-spacing: 0; }
+  .apikey-save-btn {
+    width: 100%;
+    background: var(--warm);
+    color: var(--deep);
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .apikey-save-btn:hover { opacity: 0.85; }
+  .apikey-skip-btn {
+    background: none; border: none;
+    color: var(--muted); font-size: 12px;
+    cursor: pointer; margin-top: 14px;
+    text-decoration: underline;
+    display: block; width: 100%;
+  }
+  .apikey-skip-btn:hover { color: var(--warm-light); }
+  .apikey-error {
+    color: var(--clay); font-size: 12px;
+    margin-top: 6px; display: none;
+  }
+  /* API key indicator in header */
+  .apikey-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--muted);
+    cursor: pointer; padding: 6px 10px;
+    border-radius: 6px; border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .apikey-status:hover { border-color: var(--warm); color: var(--warm); }
+  .apikey-clear-btn {
+    background: none; border: none;
+    color: var(--clay); font-size: 10px;
+    cursor: pointer; margin-top: 10px;
+    text-decoration: underline;
+    display: none; width: 100%;
+  }
+  .apikey-clear-btn.visible { display: block; }
+  .apikey-status .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .apikey-status.active .dot { background: var(--sage); }
+  .apikey-status.active { color: var(--sage); }
+
+  .loading-dots::after {
+    content: '...';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+  }
+
+  @media (max-width: 700px) {
+    header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+    .tabs { padding: 0 16px; overflow-x: auto; }
+    main { padding: 24px 16px; }
+    .compare-view { grid-template-columns: 1fr; }
+    .categories-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── EXPORT BUTTONS ─────────────────────────────────── */
+  .export-bar {
+    display: flex; gap: 10px; align-items: center;
+    margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .export-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--deep); color: var(--warm);
+    border: 1px solid var(--warm); border-radius: 8px;
+    padding: 9px 18px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .export-btn:hover { background: var(--warm); color: var(--deep); }
+  .export-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  /* ── PRINT / PDF STYLES ─────────────────────────────── */
+  @media print {
+    /* Hide everything by default */
+    header, .tabs, .export-bar, .ai-coach-btn, .ai-response,
+    .deep-session-btn, #deep-session-panel, .add-step-btn,
+    .add-pathway-btn, .remove-pathway, .step-remove,
+    .summary-btn, #compare-output .summary-btn,
+    .apikey-overlay, .apikey-status, .timeline-selector,
+    button:not(.print-keep) { display: none !important; }
+
+    body { background: white; color: #1a1612; font-size: 11pt; }
+    main { max-width: 100%; padding: 0; margin: 0; }
+
+    /* Show only the active print tab */
+    .tab-content { display: none !important; }
+    .tab-content.print-active { display: block !important; }
+
+    /* Full export — show all tabs sequentially */
+    .tab-content.print-all { display: block !important; }
+    .print-all-divider {
+      page-break-before: always; break-before: page;
+      border-top: 3px solid #c8a96e;
+      margin: 0; padding: 0;
+      display: block !important;
+    }
+
+    /* Page setup */
+    @page { margin: 18mm 16mm; size: A4; }
+    @page :first { margin-top: 12mm; }
+
+    /* Print header */
+    .print-header {
+      display: flex !important;
+      align-items: baseline; justify-content: space-between;
+      border-bottom: 2px solid #c8a96e; padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .print-header-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22pt; font-weight: 300; color: #2c2416;
+      letter-spacing: 3px; text-transform: uppercase;
+    }
+    .print-header-sub {
+      font-size: 9pt; color: #8a7f70; letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Section titles */
+    .section-title { font-size: 16pt; margin-bottom: 4px; }
+    .section-subtitle { font-size: 9pt; margin-bottom: 14px; color: #8a7f70; }
+
+    /* Category cards — entry/exit */
+    .category-card { 
+      border: 1px solid #ddd5c2; border-radius: 6px;
+      margin-bottom: 14px; page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .category-card .category-header {
+      padding: 10px 16px; background: #f5f0e8;
+      border-bottom: 1px solid #ddd5c2;
+    }
+    .category-name { font-size: 13pt; }
+    .category-toggle { display: none !important; }
+    /* Force all cards open for print */
+    .category-card .category-body {
+      max-height: none !important; padding: 14px 16px !important;
+    }
+    .question-label { font-size: 8pt; color: #8a7f70; margin-bottom: 2px; }
+    .question-hint { font-size: 9pt; color: #8a7f70; margin-bottom: 4px; }
+    .question-input {
+      border: none; border-bottom: 1px solid #ddd5c2;
+      background: transparent; min-height: unset;
+      font-size: 10pt; padding: 2px 0; width: 100%;
+      resize: none; display: block;
+    }
+    /* Show filled-in text from textareas */
+    .question-block { margin-bottom: 12px; }
+    .rating-row { gap: 4px; }
+    .rating-btn { width: 22px; height: 22px; font-size: 9pt; }
+    .categories-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Journey / Activities tab */
+    .activity-category {
+      border: 1px solid #ddd5c2; border-radius: 6px;
+      margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid;
+    }
+    .activity-cat-header {
+      background: #f5f0e8; padding: 10px 16px;
+      border-bottom: 1px solid #ddd5c2;
+    }
+    .activity-cat-body { max-height: none !important; }
+    .activity-cat-inner { padding: 12px 16px; }
+    .pathway-card {
+      border: 1px solid #ddd5c2; border-radius: 6px;
+      padding: 12px 14px; margin-bottom: 10px;
+      page-break-inside: avoid; break-inside: avoid;
+    }
+    .pathway-title-input {
+      font-size: 12pt; font-weight: 600; border: none;
+      border-bottom: 1px solid #ddd5c2; width: 100%;
+      background: transparent; padding: 2px 4px;
+    }
+    .step-item { padding: 6px 0; border-bottom: 1px solid #eee; }
+    .step-input { font-size: 10pt; }
+
+    /* Tracker lines for Journey tab */
+    .tracker-notes-area {
+      display: block !important;
+      margin-top: 10px; border: 1px solid #ddd5c2;
+      border-radius: 4px; padding: 8px 10px;
+    }
+    .tracker-notes-label {
+      font-size: 8pt; text-transform: uppercase;
+      letter-spacing: 1px; color: #8a7f70; margin-bottom: 6px;
+      display: block !important;
+    }
+    .tracker-line {
+      border-bottom: 1px solid #e8d9bc;
+      height: 22px; margin-bottom: 2px;
+      display: block !important;
+    }
+
+    /* Progress bars */
+    .progress-overview { border: 1px solid #ddd5c2; padding: 12px 16px; }
+    .progress-bar-track { border: 1px solid #ddd5c2; }
+    .progress-bar-fill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+    /* Compare view */
+    .compare-view { grid-template-columns: 1fr 1fr; }
+
+    /* Page breaks */
+    .page-break-before { page-break-before: always; break-before: page; }
+  }
+
+  /* Tracker notes — hidden on screen, shown in print */
+  .tracker-notes-area { display: none; }
+  .tracker-notes-label { display: none; }
+  .tracker-line { display: none; }
+  .print-header { display: none; }
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="apikey-overlay hidden" id="apikey-overlay">
+  <div class="apikey-modal">
+    <div class="apikey-modal-icon">🔑</div>
+    <div class="apikey-modal-title">API Key Required</div>
+    <div class="apikey-modal-body">
+      You're running this outside of Claude.ai, so the AI coach features need your Anthropic API key to work.<br><br>
+      Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.<br>
+      Your key is saved in this browser's local storage — it persists across sessions on this device, and is never sent anywhere except the Anthropic API directly.
+    </div>
+    <input class="apikey-input" type="password" id="apikey-input" placeholder="sk-ant-..." />
+    <div class="apikey-error" id="apikey-error">Please enter a valid API key (starts with sk-ant-)</div>
+    <button class="apikey-save-btn" onclick="saveApiKey()">Save & Continue</button>
+    <button class="apikey-skip-btn" onclick="skipApiKey()">Skip for now (AI features will be disabled)</button>
+    <button class="apikey-clear-btn" id="apikey-clear-btn" onclick="clearApiKey();hideApiKeyModal()">🗑 Clear saved key</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">This is the Way</div>
+  <div class="timeline-selector">
+    <label>Planning horizon</label>
+    <select id="timelineYears" onchange="updateTimeline()">
+      <option value="1">1 Year</option>
+      <option value="3" selected>3 Years</option>
+      <option value="5">5 Years</option>
+      <option value="10">10 Years</option>
+      <option value="20">20 Years</option>
+    </select>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('starting')">✦ Starting</div>
+  <div class="tab" onclick="switchTab('entry')">① Entry — Where I Am</div>
+  <div class="tab" onclick="switchTab('exit')">② Exit — Where I'm Going</div>
+  <div class="tab" onclick="switchTab('activities')">③ The Journey</div>
+</div>
+
+<main>
+  <!-- STARTING TAB -->
+  <div class="tab-content active" id="tab-starting">
+    <div class="print-header">
+      <div class="print-header-title">This is the Way</div>
+      <div class="print-header-sub">My Future Self</div>
+    </div>
+
+    <!-- Restart + Backup/Restore bar -->
+    <div class="export-bar" style="justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="export-btn" onclick="exportTab('starting')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Export to PDF
+        </button>
+        <button class="export-btn" onclick="backupData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Backup Data
+        </button>
+        <label class="export-btn" style="cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Restore Data
+          <input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
+        </label>
+      </div>
+      <button class="export-btn" onclick="confirmRestart()" style="border-color:var(--clay);color:var(--clay);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        Restart Journey
+      </button>
+    </div>
+
+    <!-- Restart confirm modal -->
+    <div class="apikey-overlay hidden" id="restart-overlay">
+      <div class="apikey-modal">
+        <div class="apikey-modal-icon">⚠️</div>
+        <div class="apikey-modal-title">Restart Your Journey?</div>
+        <div class="apikey-modal-body">
+          This will permanently clear <strong>all your answers, pathways, steps and ratings</strong> across every tab.<br><br>
+          Consider doing a <strong>Backup</strong> first so you can restore if needed.
+        </div>
+        <button class="apikey-save-btn" style="background:var(--clay);margin-bottom:8px" onclick="doRestart()">Yes, clear everything & restart</button>
+        <button class="apikey-skip-btn" onclick="document.getElementById('restart-overlay').classList.add('hidden')">Cancel — keep my data</button>
+      </div>
+    </div>
+
+    <!-- Name + Date row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+      <div class="question-block">
+        <div class="question-label">Your Name</div>
+        <input type="text" class="question-input single" placeholder="Who is embarking on this journey?"
+          id="starting-name-input" value=""
+          oninput="saveStarting('name', this.value)">
+      </div>
+      <div class="question-block">
+        <div class="question-label">Date Started</div>
+        <input type="date" class="question-input single"
+          id="starting-date-input" value=""
+          oninput="saveStarting('date', this.value)">
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:28px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--deep);margin-bottom:16px;">Before you begin</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--warm);color:white;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">1</div>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--ink);line-height:1.5;">You are 5 or 10 years in the future.</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:3px;">Imagine what your life could be if you could do anything you wanted, and had no fear of failure.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--warm);color:white;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">2</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--ink);line-height:1.5;">Dream big. Don't hold back.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--warm);color:white;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">3</div>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--ink);line-height:1.5;">Get specific about all aspects of your life.</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:3px;">Go into as much detail as you'd like.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Future Self text box -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px;">
+      <div style="background:var(--deep);padding:18px 24px;border-left:4px solid var(--warm);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--warm);letter-spacing:1px;">My future self is…</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Write freely — no limits, no judgment</div>
+      </div>
+      <div style="padding:24px;">
+        <textarea id="starting-futureself-input" class="question-input" rows="14"
+          style="min-height:320px;font-size:15px;line-height:1.8;background:var(--parchment);"
+          placeholder="In 10 years, I am living in... My work feels like... The relationships in my life are... I wake up every morning and... My body feels... I have accomplished... The person I have become is..."
+          oninput="saveStarting('futureSelf', this.value)"></textarea>
+      </div>
+    </div>
+
+    <!-- Word count + AI reflection -->
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <span id="wordcount" style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">0 words</span>
+      <button class="ai-coach-btn" style="flex:1;max-width:320px" onclick="analyseStarting(this)">
+        🧭 Coach: Reflect on my future self vision
+      </button>
+    </div>
+    <div class="ai-response" id="starting-coach-response"></div>
+
+    <!-- Tracker note lines for print -->
+    <div class="tracker-notes-area" style="margin-top:16px">
+      <span class="tracker-notes-label">Notes</span>
+      <span class="tracker-line"></span><span class="tracker-line"></span>
+      <span class="tracker-line"></span><span class="tracker-line"></span>
+      <span class="tracker-line"></span><span class="tracker-line"></span>
+      <span class="tracker-line"></span><span class="tracker-line"></span>
+    </div>
+  </div>
+
+  <!-- ENTRY TAB -->
+  <div class="tab-content" id="tab-entry">
+    <div class="print-header">
+      <div class="print-header-title">This is the Way</div>
+      <div class="print-header-sub">Entry — Where I Am Now</div>
+    </div>
+    <div class="coach-banner">
+      <div class="coach-label">🧭 Your Coach</div>
+      <p id="entry-coach-msg">"Before we can chart where you're going, let's be honest about where you are right now. Take your time with each area — the truth, however uncomfortable, is your compass."</p>
+    </div>
+    <div class="export-bar">
+      <button class="export-btn" onclick="exportTab('entry')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Export Entry to PDF
+      </button>
+    </div>
+    <div class="section-title">Where Are You Now?</div>
+    <div class="section-subtitle">Assess your current reality across each life domain. Rate yourself honestly — this is your foundation, not a judgment.</div>
+    <div class="categories-grid" id="entry-categories"></div>
+  </div>
+
+  <!-- EXIT TAB -->
+  <div class="tab-content" id="tab-exit">
+    <div class="print-header">
+      <div class="print-header-title">This is the Way</div>
+      <div class="print-header-sub">Exit — Where I'm Going</div>
+    </div>
+    <div class="coach-banner">
+      <div class="coach-label">🌅 Your Coach</div>
+      <p id="exit-coach-msg">"Now let's dream with discipline. In <span class="years-display">3</span> years, what does your life look like? Be specific — vague dreams produce vague results. What does success actually feel like?"</p>
+    </div>
+    <div class="export-bar">
+      <button class="export-btn" onclick="exportTab('exit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Export Exit to PDF
+      </button>
+    </div>
+    <div class="section-title">Where Are You Going?</div>
+    <div class="section-subtitle">Define your destination across each area. Your exit criteria are the benchmarks of your future self.</div>
+    <div class="categories-grid" id="exit-categories"></div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:28px">
+      <button class="summary-btn" style="margin:0" onclick="generateSummary()">⚡ Entry vs Exit Comparison</button>
+      <button class="summary-btn" style="margin:0;background:transparent;border:2px solid var(--warm);color:var(--warm)" onclick="runDeepSession()">🧠 Full Psychological Profile</button>
+    </div>
+    <div id="compare-output"></div>
+    <div class="deep-session-panel" id="deep-session-panel">
+      <div class="deep-session-title">Your Psychological Profile</div>
+      <div class="deep-session-subtitle">A full coach reading across all areas of your life</div>
+      <div id="deep-session-content">
+        <div style="text-align:center;padding:40px;color:var(--muted);font-style:italic">
+          <div class="loading-dots" style="font-size:18px;color:var(--warm)">Your coach is doing a deep read</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITIES TAB -->
+  <div class="tab-content" id="tab-activities">
+    <div class="print-header">
+      <div class="print-header-title">This is the Way</div>
+      <div class="print-header-sub">The Journey — Actions &amp; Progress Tracker</div>
+    </div>
+    <div class="coach-banner">
+      <div class="coach-label">🗺 Your Coach</div>
+      <p id="activities-coach-msg">"The gap between who you are and who you want to be is closed by action. For each area of your life, define your pathways — and remember, you may have multiple options. Let's explore them all."</p>
+    </div>
+    <div class="export-bar">
+      <button class="export-btn" onclick="exportTab('activities')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Export Journey Tracker to PDF
+      </button>
+      <button class="export-btn" onclick="exportTab('activities-full')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Export with Note Lines
+      </button>
+      <button class="export-btn" onclick="exportAll()" style="background:var(--warm);color:var(--deep);border-color:var(--warm);font-weight:500;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><rect x="3" y="11" width="18" height="11" rx="2"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        ✦ Export All — Full Journey PDF
+      </button>
+    </div>
+    <div class="section-title">The Journey — Steps, Activities & Pathways</div>
+    <div class="section-subtitle">For each category, you can create multiple pathway options (e.g. 3 different job paths). Map out the steps for each.</div>
+
+    <div class="progress-overview">
+      <div class="progress-title">Journey Progress Overview</div>
+      <div class="progress-bars" id="progress-bars"></div>
+    </div>
+
+    <div id="activity-categories"></div>
+  </div>
+</main>
+
+<script>
+const CATEGORIES = [
+  { id: 'health', icon: '🌿', name: 'Health & Wellbeing', color: '#7a8c7e' },
+  { id: 'relationships', icon: '❤️', name: 'Relationships', color: '#b5694a' },
+  { id: 'finance', icon: '💰', name: 'Finance', color: '#c8a96e' },
+  { id: 'job', icon: '💼', name: 'Work & Career', color: '#5c7a8a' },
+  { id: 'family', icon: '🏡', name: 'Family', color: '#8a6c9e' },
+  { id: 'experiences', icon: '🌍', name: 'Experiences', color: '#7a6e5a' },
+  { id: 'other', icon: '✨', name: 'Other / Personal Growth', color: '#9e7a6c' },
+];
+
+const QUESTIONS = {
+  health: {
+    entry: [
+      { id: 'fitness', label: 'Physical Fitness', hint: 'How would you describe your current physical fitness and energy levels?', type: 'text' },
+      { id: 'fitness_rating', label: 'Rate your current health', hint: '', type: 'rating' },
+      { id: 'habits', label: 'Key Habits', hint: 'What are your current sleep, nutrition, and exercise habits?', type: 'text' },
+      { id: 'challenges', label: 'Health Challenges', hint: 'What health challenges or concerns are you currently managing?', type: 'text' },
+    ],
+    exit: [
+      { id: 'fitness', label: 'Physical Fitness Goal', hint: 'What does your ideal physical state look and feel like in {{years}} years?', type: 'text' },
+      { id: 'fitness_rating', label: 'Target health rating', hint: '', type: 'rating' },
+      { id: 'habits', label: 'Desired Habits', hint: 'What daily health rituals will define your future self?', type: 'text' },
+      { id: 'milestone', label: 'A Health Milestone', hint: 'What\'s one specific health achievement you want to reach?', type: 'text' },
+    ]
+  },
+  relationships: {
+    entry: [
+      { id: 'status', label: 'Relationship Status', hint: 'How would you describe your primary relationship(s) right now?', type: 'text' },
+      { id: 'quality', label: 'Relationship Quality', hint: '', type: 'rating' },
+      { id: 'social', label: 'Social Circle', hint: 'How would you describe your friendships and social connections?', type: 'text' },
+      { id: 'challenges', label: 'Relationship Challenges', hint: 'What relationship patterns or challenges do you notice?', type: 'text' },
+    ],
+    exit: [
+      { id: 'status', label: 'Relationship Vision', hint: 'What does your ideal relationship life look like in {{years}} years?', type: 'text' },
+      { id: 'quality', label: 'Target relationship quality', hint: '', type: 'rating' },
+      { id: 'social', label: 'Social Life Vision', hint: 'What kind of friendships and community do you want to have built?', type: 'text' },
+      { id: 'growth', label: 'Relationship Growth', hint: 'What new relationship skills or patterns do you want to embody?', type: 'text' },
+    ]
+  },
+  finance: {
+    entry: [
+      { id: 'income', label: 'Current Income', hint: 'What is your approximate annual income or earning level?', type: 'text' },
+      { id: 'financial_rating', label: 'Financial health rating', hint: '', type: 'rating' },
+      { id: 'savings', label: 'Savings & Assets', hint: 'What savings, investments, or assets do you currently have?', type: 'text' },
+      { id: 'debts', label: 'Debts & Liabilities', hint: 'What financial obligations, debts, or pressures are you carrying?', type: 'text' },
+    ],
+    exit: [
+      { id: 'income', label: 'Income Target', hint: 'What income level would represent true financial success in {{years}} years?', type: 'text' },
+      { id: 'financial_rating', label: 'Target financial rating', hint: '', type: 'rating' },
+      { id: 'savings', label: 'Wealth Goals', hint: 'What assets, savings, or net worth do you want to have built?', type: 'text' },
+      { id: 'freedom', label: 'Financial Freedom Definition', hint: 'What does financial freedom actually mean to you personally?', type: 'text' },
+    ]
+  },
+  job: {
+    entry: [
+      { id: 'role', label: 'Current Role', hint: 'What is your current job, role, or primary work activity?', type: 'text' },
+      { id: 'job_rating', label: 'Career satisfaction rating', hint: '', type: 'rating' },
+      { id: 'skills', label: 'Current Skills', hint: 'What are your strongest professional skills and capabilities?', type: 'text' },
+      { id: 'frustrations', label: 'Work Frustrations', hint: 'What about your work feels unfulfilling, draining, or misaligned?', type: 'text' },
+    ],
+    exit: [
+      { id: 'role', label: 'Dream Role / Work', hint: 'What kind of work do you want to be doing in {{years}} years?', type: 'text' },
+      { id: 'job_rating', label: 'Target career satisfaction', hint: '', type: 'rating' },
+      { id: 'skills', label: 'Skills to Develop', hint: 'What expertise or capabilities do you need to acquire?', type: 'text' },
+      { id: 'impact', label: 'Work Impact', hint: 'What impact do you want your work to have on the world?', type: 'text' },
+    ]
+  },
+  family: {
+    entry: [
+      { id: 'structure', label: 'Family Situation', hint: 'How would you describe your current family structure and dynamics?', type: 'text' },
+      { id: 'family_rating', label: 'Family life satisfaction', hint: '', type: 'rating' },
+      { id: 'roles', label: 'Family Roles', hint: 'What roles do you play in your family — and which feel right vs misaligned?', type: 'text' },
+      { id: 'tensions', label: 'Family Tensions', hint: 'What unresolved tensions or dynamics are present in your family?', type: 'text' },
+    ],
+    exit: [
+      { id: 'structure', label: 'Family Vision', hint: 'What does your ideal family life look like in {{years}} years?', type: 'text' },
+      { id: 'family_rating', label: 'Target family life quality', hint: '', type: 'rating' },
+      { id: 'legacy', label: 'Family Legacy', hint: 'What do you want to build, heal, or create for your family?', type: 'text' },
+      { id: 'milestones', label: 'Family Milestones', hint: 'What key family moments or milestones do you want to experience?', type: 'text' },
+    ]
+  },
+  experiences: {
+    entry: [
+      { id: 'adventures', label: 'Life Experiences So Far', hint: 'What experiences, travels, or adventures have shaped you most?', type: 'text' },
+      { id: 'exp_rating', label: 'Life richness rating', hint: '', type: 'rating' },
+      { id: 'bucket', label: 'Current Bucket List', hint: 'What experiences are on your list that you haven\'t yet had?', type: 'text' },
+      { id: 'barriers', label: 'Barriers to Experiences', hint: 'What stops you from having the experiences you want?', type: 'text' },
+    ],
+    exit: [
+      { id: 'adventures', label: 'Experiences to Have', hint: 'What experiences must you have in the next {{years}} years?', type: 'text' },
+      { id: 'exp_rating', label: 'Target life richness', hint: '', type: 'rating' },
+      { id: 'places', label: 'Places & Journeys', hint: 'Where do you want to go? What places matter to you?', type: 'text' },
+      { id: 'growth', label: 'Growth Experiences', hint: 'What experiences will most stretch and transform you?', type: 'text' },
+    ]
+  },
+  other: {
+    entry: [
+      { id: 'purpose', label: 'Sense of Purpose', hint: 'How connected do you feel to a deeper sense of meaning or purpose?', type: 'text' },
+      { id: 'purpose_rating', label: 'Purpose / meaning rating', hint: '', type: 'rating' },
+      { id: 'passions', label: 'Current Passions', hint: 'What activities, causes, or pursuits genuinely energise you?', type: 'text' },
+      { id: 'gaps', label: 'Areas Feeling Neglected', hint: 'What parts of yourself feel most unexpressed or undeveloped?', type: 'text' },
+    ],
+    exit: [
+      { id: 'purpose', label: 'Purpose Vision', hint: 'What greater sense of meaning or purpose do you want to embody in {{years}} years?', type: 'text' },
+      { id: 'purpose_rating', label: 'Target purpose rating', hint: '', type: 'rating' },
+      { id: 'passions', label: 'Passions to Pursue', hint: 'What creative, spiritual, or personal pursuits will you have made time for?', type: 'text' },
+      { id: 'legacy', label: 'Personal Legacy', hint: 'When you look back from this future point, what do you want to have stood for?', type: 'text' },
+    ]
+  }
+};
+
+const state = {
+  years: 3,
+  starting: { name: '', date: '', futureSelf: '' },
+  entry: {},
+  exit: {},
+  activities: {},
+  ratings: { entry: {}, exit: {} }
+};
+
+// Load from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('journey_coach_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Deep merge to preserve nested ratings object
+      state.years = parsed.years || state.years;
+      state.starting = parsed.starting || { name: '', date: '', futureSelf: '' };
+      state.entry = parsed.entry || {};
+      state.exit = parsed.exit || {};
+      state.activities = parsed.activities || {};
+      state.ratings = {
+        entry: (parsed.ratings && parsed.ratings.entry) || {},
+        exit: (parsed.ratings && parsed.ratings.exit) || {}
+      };
+    }
+  } catch(e) { console.warn('Could not load saved state:', e); }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('journey_coach_state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function getYears() { return state.years; }
+
+function updateTimeline() {
+  state.years = parseInt(document.getElementById('timelineYears').value);
+  document.querySelectorAll('.years-display').forEach(el => el.textContent = state.years);
+  saveState();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['starting','entry','exit','activities'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'activities') renderProgressBars();
+}
+
+function buildCategories(containerId, mode) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const qs = QUESTIONS[cat.id][mode];
+    const card = document.createElement('div');
+    card.className = 'category-card';
+    card.dataset.cat = cat.id;
+
+    const headerHtml = `
+      <div class="category-header" onclick="toggleCard(this)">
+        <span class="category-icon">${cat.icon}</span>
+        <span class="category-name">${cat.name}</span>
+        <span class="category-toggle">▼</span>
+      </div>`;
+
+    let questionsHtml = '<div class="category-body"><div>';
+    qs.forEach(q => {
+      const key = `${mode}_${cat.id}_${q.id}`;
+      const hint = q.hint.replace('{{years}}', state.years);
+      if (q.type === 'rating') {
+        const currentRating = state.ratings[mode][`${cat.id}_${q.id}`] || 0;
+        let ratingBtns = '';
+        for (let i=1;i<=10;i++) {
+          ratingBtns += `<button class="rating-btn ${currentRating===i?'selected':''}" onclick="setRating('${mode}','${cat.id}_${q.id}',${i},this)">${i}</button>`;
+        }
+        questionsHtml += `
+          <div class="question-block">
+            <div class="question-label">${q.label}</div>
+            <div class="rating-row">${ratingBtns}</div>
+            <div class="rating-labels"><span>Low</span><span>High</span></div>
+          </div>`;
+      } else {
+        const val = state[mode][key] || '';
+        questionsHtml += `
+          <div class="question-block">
+            <div class="question-label">${q.label}</div>
+            ${hint ? `<div class="question-hint">${hint}</div>` : ''}
+            <textarea class="question-input" placeholder="Write your honest answer here..." 
+              oninput="saveAnswer('${mode}','${key}',this.value)">${val}</textarea>
+          </div>`;
+      }
+    });
+
+    questionsHtml += `
+      <button class="ai-coach-btn" onclick="askCoach('${cat.id}','${mode}',this)" id="coach-btn-${mode}-${cat.id}">
+        🧭 Coach: Analyse this area deeply
+      </button>
+      <div class="ai-response" id="coach-${mode}-${cat.id}"></div>
+    </div></div>`;
+
+    card.innerHTML = headerHtml + questionsHtml;
+    container.appendChild(card);
+  });
+}
+
+function toggleCard(header) {
+  const card = header.closest('.category-card') || header.closest('.activity-category');
+  card.classList.toggle('open');
+}
+
+function setRating(mode, key, value, btn) {
+  state.ratings[mode][key] = value;
+  const row = btn.closest('.rating-row');
+  row.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  saveState();
+  renderProgressBars();
+}
+
+function saveAnswer(mode, key, value) {
+  state[mode][key] = value;
+  saveState();
+}
+
+async function askCoach(catId, mode, btn) {
+  const cat = CATEGORIES.find(c => c.id === catId);
+  const responseEl = document.getElementById(`coach-${mode}-${catId}`);
+  responseEl.classList.add('visible');
+  responseEl.innerHTML = '<div class="thinking">Your coach is reading your answers<span class="loading-dots"></span></div>';
+  btn.disabled = true;
+  btn.textContent = '⏳ Analysing...';
+
+  // Gather this category's answers
+  const qs = QUESTIONS[catId][mode];
+  const catAnswers = qs.map(q => {
+    const key = `${mode}_${catId}_${q.id}`;
+    if (q.type === 'rating') {
+      const r = state.ratings[mode][`${catId}_${q.id}`];
+      return r ? `${q.label}: ${r}/10` : null;
+    }
+    const v = state[mode][key];
+    return v && v.trim() ? `${q.label}: ${v.trim()}` : null;
+  }).filter(Boolean).join('\n');
+
+  // Also gather cross-category context (all other areas, summarised)
+  const crossContext = CATEGORIES.filter(c => c.id !== catId).map(c => {
+    const as = getCategoryAnswers(mode, c.id);
+    if (as.length === 0) return null;
+    return `${c.name}: ${as.map(a => a.value).join(' / ')}`;
+  }).filter(Boolean).join('\n');
+
+  // And the opposite mode for contrast
+  const oppositeMode = mode === 'entry' ? 'exit' : 'entry';
+  const oppositeAnswers = getCategoryAnswers(oppositeMode, catId).map(a => `${a.label}: ${a.value}`).join('\n');
+
+  const prompt = `You are a perceptive, psychologically astute life coach. You read between the lines. You notice what people don't say as much as what they do.
+
+Someone is doing a ${state.years}-year life planning exercise. You are analysing their "${cat.name}" section.
+
+MODE: ${mode === 'entry' ? 'CURRENT REALITY (where they are now)' : 'DESIRED FUTURE (where they want to be)'}
+
+Their answers for this area:
+${catAnswers || '(they have not answered yet — reflect on the absence itself)'}
+
+${oppositeAnswers ? `Their ${oppositeMode === 'entry' ? 'current' : 'desired'} state for this same area:
+${oppositeAnswers}` : ''}
+
+${crossContext ? `Context from other life areas they've filled in:
+${crossContext}` : ''}
+
+Write a rich, multi-part coaching analysis in this exact structure:
+
+**What I notice**
+2-3 observations about their answers — including the specific language they use, what they emphasise, what seems absent or vague. Be specific, not generic. Reference their actual words.
+
+**Patterns & psychology**
+1-2 observations about what this reveals — a belief system, a fear, a story they might be telling themselves, a tension with other life areas. Be honest. Coaches don't just validate.
+
+**What you might be avoiding**
+One direct, compassionate observation about what might be harder to look at here. This could be a contradiction, a sacrifice not yet acknowledged, or a truth not yet named.
+
+**Questions to sit with**
+2 powerful questions — not to answer now, but to carry. Make them specific to their situation, not generic coaching clichés.
+
+Tone: warm but unflinching. Like a coach who genuinely cares AND tells the truth. Maximum 350 words total.`;
+
+  try {
+    const raw = await claudeFetch(prompt, 600);
+    // Format markdown-style bold headers into styled HTML
+    const formatted = raw
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--warm);font-family:DM Sans;font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-top:14px;margin-bottom:4px">$1</strong>')
+      .replace(/\n/g, '<br>');
+    responseEl.innerHTML = `<div class="thinking">Coach analysis — ${cat.name}</div><div style="line-height:1.7">${formatted}</div>`;
+  } catch(e) {
+    responseEl.innerHTML = `<div class="thinking">Coach analysis</div>I notice something worth sitting with: the way you describe this area tells its own story. What would it mean if the version of you that already lives this future looked back at what you wrote today — what would they say you were still holding onto?`;
+  }
+  btn.disabled = false;
+  btn.textContent = '🧭 Coach: Analyse this area deeply';
+}
+
+// ACTIVITIES
+function buildActivities() {
+  const container = document.getElementById('activity-categories');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach(cat => {
+    if (!state.activities[cat.id]) {
+      state.activities[cat.id] = [{
+        id: Date.now() + Math.random(),
+        title: '',
+        steps: [{ id: Date.now(), text: '', done: false }],
+        startYear: 0,
+        endYear: state.years
+      }];
+    }
+
+    const div = document.createElement('div');
+    div.className = 'activity-category';
+    div.dataset.cat = cat.id;
+    div.id = `act-cat-${cat.id}`;
+
+    div.innerHTML = `
+      <div class="activity-cat-header" onclick="toggleCard(this)">
+        <span class="category-icon">${cat.icon}</span>
+        <span class="category-name" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;flex:1">${cat.name}</span>
+        <span class="category-toggle">▼</span>
+      </div>
+      <div class="activity-cat-body">
+        <div class="activity-cat-inner" id="pathways-${cat.id}"></div>
+      </div>`;
+    container.appendChild(div);
+    renderPathways(cat.id);
+  });
+}
+
+function renderPathways(catId) {
+  const container = document.getElementById(`pathways-${catId}`);
+  const pathways = state.activities[catId] || [];
+
+  container.innerHTML = `<div class="pathways-label">Pathway Options — You can explore multiple routes (e.g. different job paths, living scenarios)</div>`;
+
+  pathways.forEach((pathway, idx) => {
+    const el = document.createElement('div');
+    el.className = 'pathway-card';
+    el.id = `pathway-${catId}-${idx}`;
+
+    let stepsHtml = '<ul class="steps-list">';
+    (pathway.steps || []).forEach((step, si) => {
+      stepsHtml += `
+        <li class="step-item">
+          <div class="step-check ${step.done ? 'done' : ''}" onclick="toggleStep('${catId}',${idx},${si},this)"></div>
+          <input class="step-input ${step.done ? 'done-text' : ''}" type="text" value="${escapeHtml(step.text)}" 
+            placeholder="Add an action, milestone, or experience..."
+            onchange="updateStep('${catId}',${idx},${si},'text',this.value)">
+          <button class="step-remove" onclick="removeStep('${catId}',${idx},${si})">✕</button>
+        </li>`;
+    });
+    stepsHtml += '</ul>';
+
+    el.innerHTML = `
+      <div class="pathway-header">
+        <div class="pathway-number">${idx + 1}</div>
+        <input class="pathway-title-input" type="text" value="${escapeHtml(pathway.title)}" 
+          placeholder="Pathway name (e.g. 'Stay in current company', 'Start my own business'...)"
+          onchange="updatePathway('${catId}',${idx},'title',this.value)">
+        <button class="remove-pathway" onclick="removePathway('${catId}',${idx})" title="Remove pathway">✕</button>
+      </div>
+      <div class="timeline-bar-section">
+        <div class="timeline-bar-label">Timing within your ${state.years}-year plan</div>
+        <div class="timeline-inputs">
+          <div class="timeline-input">
+            <label>Start (year)</label>
+            <input type="number" min="0" max="${state.years}" value="${pathway.startYear || 0}" 
+              onchange="updatePathway('${catId}',${idx},'startYear',parseInt(this.value))">
+          </div>
+          <div style="color:var(--muted);font-size:18px;padding-top:18px;">→</div>
+          <div class="timeline-input">
+            <label>Complete (year)</label>
+            <input type="number" min="1" max="${state.years}" value="${pathway.endYear || state.years}" 
+              onchange="updatePathway('${catId}',${idx},'endYear',parseInt(this.value))">
+          </div>
+        </div>
+      </div>
+      <div class="pathways-label" style="margin-top:14px">Steps & Actions</div>
+      ${stepsHtml}
+      <button class="add-step-btn" onclick="addStep('${catId}',${idx})">+ Add a step</button>
+      <button class="ai-coach-btn" style="margin-top:12px" onclick="suggestSteps('${catId}',${idx},this)">
+        🧭 Coach: Suggest steps for this pathway
+      </button>
+      <div class="ai-response" id="suggest-${catId}-${idx}"></div>
+      <div class="tracker-notes-area">
+        <span class="tracker-notes-label">Notes / Reflections</span>
+        ${Array(6).fill('<span class="tracker-line"></span>').join('')}
+      </div>`;
+
+    container.appendChild(el);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-pathway-btn';
+  addBtn.innerHTML = '+ Add another pathway option';
+  addBtn.onclick = () => addPathway(catId);
+  container.appendChild(addBtn);
+}
+
+function addPathway(catId) {
+  if (!state.activities[catId]) state.activities[catId] = [];
+  state.activities[catId].push({ id: Date.now(), title: '', steps: [{ id: Date.now(), text: '', done: false }], startYear: 0, endYear: state.years });
+  renderPathways(catId);
+  saveState();
+}
+
+function removePathway(catId, idx) {
+  state.activities[catId].splice(idx, 1);
+  if (state.activities[catId].length === 0) {
+    state.activities[catId] = [{ id: Date.now(), title: '', steps: [], startYear: 0, endYear: state.years }];
+  }
+  renderPathways(catId);
+  saveState();
+}
+
+function updatePathway(catId, idx, field, value) {
+  state.activities[catId][idx][field] = value;
+  saveState();
+  renderProgressBars();
+}
+
+function addStep(catId, pathIdx) {
+  state.activities[catId][pathIdx].steps.push({ id: Date.now(), text: '', done: false });
+  renderPathways(catId);
+  saveState();
+}
+
+function removeStep(catId, pathIdx, stepIdx) {
+  state.activities[catId][pathIdx].steps.splice(stepIdx, 1);
+  renderPathways(catId);
+  saveState();
+}
+
+function updateStep(catId, pathIdx, stepIdx, field, value) {
+  state.activities[catId][pathIdx].steps[stepIdx][field] = value;
+  saveState();
+  renderProgressBars();
+}
+
+function toggleStep(catId, pathIdx, stepIdx, el) {
+  const step = state.activities[catId][pathIdx].steps[stepIdx];
+  step.done = !step.done;
+  el.classList.toggle('done', step.done);
+  const input = el.nextElementSibling;
+  input.classList.toggle('done-text', step.done);
+  saveState();
+  renderProgressBars();
+}
+
+function renderProgressBars() {
+  const container = document.getElementById('progress-bars');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const pathways = state.activities[cat.id] || [];
+    const allSteps = pathways.flatMap(p => p.steps || []);
+    const total = allSteps.length;
+    const done = allSteps.filter(s => s.done).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    container.innerHTML += `
+      <div class="progress-row">
+        <div class="progress-cat-name">${cat.icon} ${cat.name.split(' ')[0]}</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:${pct}%;background:${cat.color}"></div>
+        </div>
+        <div class="progress-value">${pct}%</div>
+      </div>`;
+  });
+}
+
+async function suggestSteps(catId, pathIdx, btn) {
+  const cat = CATEGORIES.find(c => c.id === catId);
+  const pathway = state.activities[catId][pathIdx];
+  const entryData = Object.entries(state.entry || {})
+    .filter(([k]) => k.startsWith(`entry_${catId}`))
+    .map(([k,v]) => `${k.split('_').slice(2).join(' ')}: ${v}`).join('\n');
+  const exitData = Object.entries(state.exit || {})
+    .filter(([k]) => k.startsWith(`exit_${catId}`))
+    .map(([k,v]) => `${k.split('_').slice(2).join(' ')}: ${v}`).join('\n');
+
+  const responseEl = document.getElementById(`suggest-${catId}-${pathIdx}`);
+  responseEl.classList.add('visible');
+  responseEl.innerHTML = '<div class="thinking">Your coach is preparing suggestions<span class="loading-dots"></span></div>';
+
+  const prompt = `You are a practical life coach. Someone is planning their ${state.years}-year life journey.
+
+Category: ${cat.name}
+Pathway: "${pathway.title || 'untitled pathway'}"
+
+Their current situation (entry):
+${entryData || '(not filled in yet)'}
+
+Their desired future (exit):
+${exitData || '(not filled in yet)'}
+
+Suggest 5-7 concrete, actionable steps, milestones, or experiences that would help them move from their current situation to their desired future along this specific pathway. 
+
+Format as a simple numbered list. Be specific and practical. Keep each step brief (under 15 words).`;
+
+  try {
+    const text = await claudeFetch(prompt, 400);
+    responseEl.innerHTML = `<div class="thinking">Suggested steps — click to add them above</div>${text}`;
+  } catch(e) {
+    responseEl.innerHTML = `<div class="thinking">Suggested steps</div>1. Define your non-negotiables for this path\n2. Research 3 people who have done this successfully\n3. Identify the first concrete step you can take this week\n4. Build in a 90-day review checkpoint\n5. Find an accountability partner`;
+  }
+}
+
+function getCategoryAnswers(mode, catId) {
+  // Get all questions for this category/mode
+  const qs = QUESTIONS[catId][mode];
+  const lines = [];
+  qs.forEach(q => {
+    const key = `${mode}_${catId}_${q.id}`;
+    if (q.type === 'rating') {
+      const r = state.ratings[mode][`${catId}_${q.id}`];
+      if (r) lines.push({ label: q.label, value: `${r}/10`, isRating: true });
+    } else {
+      const v = state[mode][key];
+      if (v && v.trim()) lines.push({ label: q.label, value: v.trim(), isRating: false });
+    }
+  });
+  return lines;
+}
+
+async function generateSummary() {
+  const output = document.getElementById('compare-output');
+  output.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-style:italic">Generating your comparison...</div>';
+
+  let html = `<div style="margin-top:24px">
+    <div style="font-family:Cormorant Garamond,serif;font-size:26px;font-weight:300;margin-bottom:20px;color:var(--deep)">
+      Your Entry vs Exit — ${state.years}-Year Journey
+    </div>`;
+
+  // Per-category comparison rows
+  CATEGORIES.forEach(cat => {
+    const entryAnswers = getCategoryAnswers('entry', cat.id);
+    const exitAnswers = getCategoryAnswers('exit', cat.id);
+    const hasAny = entryAnswers.length > 0 || exitAnswers.length > 0;
+
+    html += `<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;">
+      <div style="background:var(--deep);padding:12px 20px;display:flex;align-items:center;gap:10px;border-left:4px solid var(--${cat.id})">
+        <span style="font-size:18px">${cat.icon}</span>
+        <span style="font-family:Cormorant Garamond,serif;font-size:18px;font-weight:500;color:var(--warm-light)">${cat.name}</span>
+      </div>
+      <div class="compare-view" style="padding:16px 20px;gap:20px;">
+        <div class="compare-col">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:500">📍 Now</div>`;
+
+    if (entryAnswers.length === 0) {
+      html += `<div style="font-size:13px;color:var(--border);font-style:italic">Not yet filled in</div>`;
+    } else {
+      entryAnswers.forEach(a => {
+        html += `<div style="margin-bottom:8px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)">${a.label}</div>
+          <div style="font-size:14px;color:var(--ink);${a.isRating ? 'font-weight:600;color:var(--warm)' : ''}">${a.isRating ? '⭐ ' + a.value : a.value}</div>
+        </div>`;
+      });
+    }
+
+    html += `</div><div class="compare-col">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:500">🌅 Future</div>`;
+
+    if (exitAnswers.length === 0) {
+      html += `<div style="font-size:13px;color:var(--border);font-style:italic">Not yet filled in</div>`;
+    } else {
+      exitAnswers.forEach(a => {
+        html += `<div style="margin-bottom:8px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)">${a.label}</div>
+          <div style="font-size:14px;color:var(--ink);${a.isRating ? 'font-weight:600;color:var(--sage)' : ''}">${a.isRating ? '🎯 ' + a.value : a.value}</div>
+        </div>`;
+      });
+    }
+
+    html += `</div></div></div>`;
+  });
+
+  // AI reflection block
+  html += `<div style="margin-top:24px">
+    <div class="coach-label" style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--warm);margin-bottom:10px">🧭 Coach's Overall Reflection</div>
+    <div id="summary-ai-response" class="ai-response visible">
+      <div class="thinking">Coach is reflecting<span class="loading-dots"></span></div>
+    </div>
+  </div></div>`;
+
+  output.innerHTML = html;
+
+  // Build rich context for AI
+  const entryStr = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('entry', cat.id);
+    if (answers.length === 0) return `${cat.name} (now): not filled in`;
+    return `${cat.name} (now): ${answers.map(a => `${a.label}: ${a.value}`).join('; ')}`;
+  }).join('\n');
+  const exitStr = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('exit', cat.id);
+    if (answers.length === 0) return `${cat.name} (future): not filled in`;
+    return `${cat.name} (future): ${answers.map(a => `${a.label}: ${a.value}`).join('; ')}`;
+  }).join('\n');
+
+  const prompt = `You are a psychologically astute life coach. You read people's actual words carefully — not just what they say but how they say it, what they avoid, what contradicts, what lights up.
+
+Someone has completed a ${state.years}-year life planning exercise — both where they are now and where they want to be. Write a coach's summary reflection that covers:
+
+1. The core transformation arc — what is the essential shift this person is seeking, in their own terms?
+2. The most interesting tension you notice — between two areas, or between what they say they want and how they describe it
+3. Something they haven't named but that seems present in the subtext of their answers
+4. One question that could shift everything for them
+
+Current situation across all areas:
+${entryStr || '(minimal data)'}
+
+Desired future across all areas:
+${exitStr || '(minimal data)'}
+
+Write in flowing prose, 4-5 sentences. Warm, honest, psychologically specific. Reference their actual answers. No bullet points. No generic coaching language.`;
+
+  try {
+    const text = await claudeFetch(prompt, 300);
+    const el = document.getElementById('summary-ai-response');
+    if (el) el.innerHTML = `<div class="thinking">Coach reflection</div>${text || 'Unable to generate reflection — please try again.'}`;
+  } catch(e) {
+    console.error('Coach reflection error:', e);
+    const el = document.getElementById('summary-ai-response');
+    if (el) el.innerHTML = `<div class="thinking">Coach reflection</div>The gap between your current reality and your vision is real — and so is your capacity to close it. The question worth sitting with is: what one belief about yourself would need to change for this future to feel genuinely possible?`;
+  }
+}
+
+async function runDeepSession() {
+  const panel = document.getElementById('deep-session-panel');
+  const contentEl = document.getElementById('deep-session-content');
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  contentEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">
+    <div style="font-family:Cormorant Garamond,serif;font-size:22px;font-style:italic;color:var(--warm-light);margin-bottom:8px">Reading your full story<span class="loading-dots"></span></div>
+    <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase">This takes a moment — your coach is doing a thorough read</div>
+  </div>`;
+
+  // Build full life picture
+  const allEntry = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('entry', cat.id);
+    if (answers.length === 0) return `${cat.name}: (not answered)`;
+    return `${cat.name}:\n${answers.map(a => `  ${a.label}: ${a.value}`).join('\n')}`;
+  }).join('\n\n');
+
+  const allExit = CATEGORIES.map(cat => {
+    const answers = getCategoryAnswers('exit', cat.id);
+    if (answers.length === 0) return `${cat.name}: (not answered)`;
+    return `${cat.name}:\n${answers.map(a => `  ${a.label}: ${a.value}`).join('\n')}`;
+  }).join('\n\n');
+
+  const prompt = `You are a highly perceptive, psychologically trained life coach. You have studied positive psychology, narrative therapy, motivational interviewing, and Jungian concepts. You read what people write with deep attention — the words they choose, the gaps, the contradictions, the emotional texture underneath.
+
+Someone has completed a full ${state.years}-year life planning exercise. They have answered questions across 7 domains of their life — both their current reality and their desired future.
+
+Your job is to write their psychological profile as a coach — not a therapist, but someone who sees clearly and speaks honestly with warmth.
+
+=== THEIR CURRENT LIFE (Entry) ===
+${allEntry || '(mostly not filled in)'}
+
+=== THEIR DESIRED FUTURE (Exit) ===
+${allExit || '(mostly not filled in)'}
+
+Write a structured psychological profile with these exact sections. Be specific to THEIR words and answers, not generic:
+
+[SECTION: The Story They're Living]
+What narrative or identity is this person currently operating from? What role are they playing? What does their language about their current life reveal about how they see themselves? (3-4 sentences, specific to their answers)
+
+[SECTION: The Story They're Reaching For]
+What does their desired future reveal about who they want to become? What values, needs, or hungers are driving this vision? Is the vision bold or cautious — and what does that tell you? (3-4 sentences)
+
+[SECTION: The Central Tension]
+Where do you notice the most significant gap, contradiction, or tension — either between their current and desired self, or between two different life areas? What might this tension be protecting them from? (3-4 sentences, honest, not harsh)
+
+[SECTION: What's Hiding in Plain Sight]
+What is present in their answers that they may not have consciously noticed — a theme, a fear, an unspoken trade-off, something they're working around? Name it with care. (2-3 sentences)
+
+[SECTION: Their Edge]
+Where is the real work? What is the single shift — in thinking, belief, or action — that would most unlock their journey? Not a to-do item. A shift in who they're being. (2-3 sentences)
+
+[SECTION: Questions to Carry]
+3 questions — not to answer now, but to live with. Make them specific, piercing, and kind. These should feel like they land somewhere real.
+
+Tone throughout: the best coach they've ever had. Warm but truthful. Specific not generic. You are not a cheerleader — you are someone who sees them and tells them what you see.`;
+
+  try {
+    const raw = await claudeFetch(prompt, 1000);
+
+    // Parse the sections
+    const sectionPattern = /\[SECTION:\s*(.+?)\]([\s\S]*?)(?=\[SECTION:|$)/g;
+    let match;
+    let html = '';
+    let found = 0;
+    while ((match = sectionPattern.exec(raw)) !== null) {
+      const title = match[1].trim();
+      const body = match[2].trim()
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      html += `<div class="session-section">
+        <div class="session-section-title">${title}</div>
+        <div class="session-section-body">${body}</div>
+      </div>`;
+      found++;
+    }
+
+    if (found === 0) {
+      // Fallback: just show formatted raw
+      const formatted = raw
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p style="margin-top:16px">')
+        .replace(/\n/g, '<br>');
+      html = `<div class="session-section"><div class="session-section-body"><p>${formatted}</p></div></div>`;
+    }
+
+    contentEl.innerHTML = html;
+  } catch(e) {
+    console.error('Deep session error:', e);
+    contentEl.innerHTML = `<div class="session-section">
+      <div class="session-section-title">A Note From Your Coach</div>
+      <div class="session-section-body">I couldn't complete the full analysis right now — but what I'd invite you to notice is this: you've already done something most people don't. You've sat down and looked honestly at where you are and where you want to go. That gap between those two things? That's not a problem to solve. That's the journey itself.</div>
+    </div>`;
+  }
+}
+
+// ── PDF EXPORT ───────────────────────────────────────────
+function exportAll() {
+  // Open all category cards
+  document.querySelectorAll('.category-card, .activity-category').forEach(c => c.classList.add('open'));
+
+  // Mark ALL tab-contents as print-all
+  const tabs = ['starting', 'entry', 'exit', 'activities'];
+  tabs.forEach(id => {
+    const el = document.getElementById('tab-' + id);
+    if (el) el.classList.add('print-all');
+  });
+
+  // Add dividers between sections
+  const dividers = [];
+  ['tab-entry', 'tab-exit', 'tab-activities'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const div = document.createElement('div');
+      div.className = 'print-all-divider';
+      el.parentNode.insertBefore(div, el);
+      dividers.push(div);
+    }
+  });
+
+  // Show note lines for activities
+  document.querySelectorAll('.tracker-notes-area').forEach(el => el.style.display = 'block');
+
+  const origTitle = document.title;
+  const name = state.starting?.name ? ` — ${state.starting.name}` : '';
+  document.title = `This is the Way${name} — Full Journey`;
+
+  setTimeout(() => {
+    window.print();
+    // Clean up after print dialog
+    setTimeout(() => {
+      document.title = origTitle;
+      tabs.forEach(id => {
+        const el = document.getElementById('tab-' + id);
+        if (el) el.classList.remove('print-all');
+      });
+      dividers.forEach(d => d.remove());
+      document.querySelectorAll('.tracker-notes-area').forEach(el => el.style.display = '');
+    }, 500);
+  }, 150);
+}
+
+
+function exportTab(tabId) {
+  // Mark which tab to print
+  const isActivities = tabId.startsWith('activities');
+  const baseTab = isActivities ? 'activities' : tabId;
+  // For starting tab, open nothing special
+  const withNotes = tabId === 'activities-full';
+
+  // Ensure all cards are open for print
+  document.querySelectorAll('.category-card, .activity-category').forEach(c => {
+    c.classList.add('open');
+  });
+
+  // Mark the target tab content as print-active
+  document.querySelectorAll('.tab-content').forEach(el => {
+    el.classList.remove('print-active');
+  });
+  const target = document.getElementById('tab-' + baseTab);
+  if (target) target.classList.add('print-active');
+
+  // Show/hide note lines
+  document.querySelectorAll('.tracker-notes-area').forEach(el => {
+    el.style.display = withNotes ? 'block' : 'none';
+  });
+
+  // Set print title in document
+  const origTitle = document.title;
+  const tabNames = { starting: 'My Future Self', entry: 'Entry — Where I Am', exit: 'Exit — Where I Am Going', activities: 'The Journey', 'activities-full': 'Journey Tracker' };
+  document.title = 'This is the Way — ' + (tabNames[tabId] || tabId);
+
+  // Trigger print
+  setTimeout(() => {
+    window.print();
+    // Restore after print dialog closes
+    setTimeout(() => {
+      document.title = origTitle;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('print-active'));
+      document.querySelectorAll('.tracker-notes-area').forEach(el => el.style.display = '');
+    }, 500);
+  }, 100);
+}
+
+function escapeHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── STARTING TAB ─────────────────────────────────────────────
+function saveStarting(field, value) {
+  if (!state.starting) state.starting = {};
+  state.starting[field] = value;
+  if (field === 'futureSelf') updateWordCount(value);
+  saveState();
+}
+
+function updateWordCount(text) {
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const el = document.getElementById('wordcount');
+  if (el) el.textContent = words + (words === 1 ? ' word' : ' words');
+}
+
+function initStartingTab() {
+  // Populate fields from saved state using stable IDs
+  const nameEl = document.getElementById('starting-name-input');
+  const dateEl = document.getElementById('starting-date-input');
+  const taEl   = document.getElementById('starting-futureself-input');
+  if (nameEl) nameEl.value = state.starting?.name || '';
+  if (dateEl) dateEl.value = state.starting?.date || '';
+  if (taEl)   taEl.value   = state.starting?.futureSelf || '';
+  updateWordCount(state.starting?.futureSelf || '');
+}
+
+async function analyseStarting(btn) {
+  const text = state.starting?.futureSelf || '';
+  const name = state.starting?.name || 'this person';
+  const responseEl = document.getElementById('starting-coach-response');
+  responseEl.classList.add('visible');
+  responseEl.innerHTML = '<div class="thinking">Your coach is reading your vision<span class="loading-dots"></span></div>';
+  btn.disabled = true;
+
+  const prompt = `You are a perceptive, warm life coach. ${name} has written their "future self" vision as part of a ${state.years}-year life planning exercise.
+
+Here is what they wrote:
+"${text}"
+
+Write a rich coaching reflection on this vision. Cover:
+
+**What lights up in this vision**
+What feels most alive, energised, or specific here — and what does that tell you about what this person truly values?
+
+**What this reveals about you**
+What deeper need, hunger, or identity shift is driving this vision? What kind of person does this future self represent?
+
+**What's still vague or missing**
+Where does the vision get fuzzy, generic, or avoid specifics? What area of life seems under-imagined?
+
+**An invitation**
+One specific, encouraging prompt to help them go even deeper or bolder in one area they haven't fully explored yet.
+
+Be specific to their actual words. Warm, honest, insightful. Max 300 words.`;
+
+  try {
+    const raw = await claudeFetch(prompt, 600);
+    const formatted = raw
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--warm);font-family:DM Sans;font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-top:14px;margin-bottom:4px">$1</strong>')
+      .replace(/\n/g, '<br>');
+    responseEl.innerHTML = `<div class="thinking">Coach reflection on your future self vision</div><div style="line-height:1.7">${formatted}</div>`;
+  } catch(e) {
+    responseEl.innerHTML = `<div class="thinking">Coach reflection</div>Your vision already has real specificity and energy in it. The question I'd invite you to sit with: which part of this future, if it came true, would most change who you are — not just what you have?`;
+  }
+  btn.disabled = false;
+  btn.textContent = '🧭 Coach: Reflect on my future self vision';
+}
+
+// ── RESTART ───────────────────────────────────────────────────
+function confirmRestart() {
+  document.getElementById('restart-overlay').classList.remove('hidden');
+}
+
+function doRestart() {
+  // Clear all state
+  state.entry = {};
+  state.exit = {};
+  state.activities = {};
+  state.ratings = { entry: {}, exit: {} };
+  state.starting = { name: '', date: '', futureSelf: '' };
+  saveState();
+  // Clear localStorage completely
+  try { localStorage.removeItem('journey_coach_state'); } catch(e) {}
+  // Rebuild UI
+  document.getElementById('restart-overlay').classList.add('hidden');
+  buildCategories('entry-categories', 'entry');
+  buildCategories('exit-categories', 'exit');
+  buildActivities();
+  renderProgressBars();
+  // Reset starting tab fields
+  const rName = document.getElementById('starting-name-input');
+  const rDate = document.getElementById('starting-date-input');
+  const rTa   = document.getElementById('starting-futureself-input');
+  if (rName) rName.value = '';
+  if (rDate) rDate.value = '';
+  if (rTa)   rTa.value   = '';
+  updateWordCount('');
+  const aiRes = document.getElementById('starting-coach-response');
+  if (aiRes) { aiRes.innerHTML = ''; aiRes.classList.remove('visible'); }
+  switchTab('starting');
+}
+
+// ── BACKUP / RESTORE ─────────────────────────────────────────
+function backupData() {
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    planningYears: state.years,
+    starting: state.starting || {},
+    entry: state.entry || {},
+    exit: state.exit || {},
+    activities: state.activities || {},
+    ratings: state.ratings || { entry: {}, exit: {} }
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const name = state.starting?.name ? state.starting.name.replace(/\s+/g, '-') : 'journey';
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `this-is-the-way_${name}_${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version) throw new Error('Invalid backup file');
+      // Restore state
+      state.years = data.planningYears || state.years;
+      state.starting = data.starting || {};
+      state.entry = data.entry || {};
+      state.exit = data.exit || {};
+      state.activities = data.activities || {};
+      state.ratings = data.ratings || { entry: {}, exit: {} };
+      saveState();
+      // Update timeline selector
+      document.getElementById('timelineYears').value = state.years;
+      document.querySelectorAll('.years-display').forEach(el => el.textContent = state.years);
+      // Rebuild all tabs
+      buildCategories('entry-categories', 'entry');
+      buildCategories('exit-categories', 'exit');
+      buildActivities();
+      renderProgressBars();
+      initStartingTab();
+      // Restore starting fields
+      const nameEl = document.getElementById('starting-name-input');
+      const dateEl = document.getElementById('starting-date-input');
+      const taEl   = document.getElementById('starting-futureself-input');
+      if (nameEl) nameEl.value = state.starting?.name || '';
+      if (dateEl) dateEl.value = state.starting?.date || '';
+      if (taEl)   taEl.value   = state.starting?.futureSelf || '';
+      updateWordCount(state.starting?.futureSelf || '');
+      switchTab('starting');
+      alert(`✓ Journey restored successfully!\nRestored from: ${data.exportedAt ? new Date(data.exportedAt).toLocaleDateString() : 'unknown date'}`);
+    } catch(err) {
+      alert('Could not restore — the file may be invalid or corrupted.\n\n' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  // Reset file input so same file can be selected again
+  event.target.value = '';
+}
+
+// ── API KEY MANAGEMENT ──────────────────────────────────────
+let _apiKey = 'PASTE_YOUR_API_KEY_HERE';
+
+function loadApiKey() {
+  try {
+    const saved = localStorage.getItem('titw_api_key');
+    if (saved) {
+      _apiKey = saved;
+      updateApiKeyStatus(true);
+    }
+  } catch(e) {}
+}
+
+function isClaudeAI() {
+  // Private build — API key is embedded, modal never needed
+  return true;
+}
+
+function getApiHeaders() {
+  const headers = {
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+  if (_apiKey) headers['x-api-key'] = _apiKey;
+  return headers;
+}
+
+function showApiKeyModal() {
+  const overlay = document.getElementById('apikey-overlay');
+  const clearBtn = document.getElementById('apikey-clear-btn');
+  const input = document.getElementById('apikey-input');
+  overlay.classList.remove('hidden');
+  if (_apiKey) {
+    // Show masked version and reveal clear button
+    input.placeholder = '••••••••••••••••' + _apiKey.slice(-4);
+    clearBtn.classList.add('visible');
+  } else {
+    input.placeholder = 'sk-ant-...';
+    clearBtn.classList.remove('visible');
+  }
+  input.focus();
+}
+
+function hideApiKeyModal() {
+  document.getElementById('apikey-overlay').classList.add('hidden');
+}
+
+function saveApiKey() {
+  const input = document.getElementById('apikey-input').value.trim();
+  const errEl = document.getElementById('apikey-error');
+  if (!input.startsWith('sk-ant-') && !input.startsWith('sk-')) {
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  _apiKey = input;
+  try { localStorage.setItem('titw_api_key', _apiKey); } catch(e) {}
+  updateApiKeyStatus(true);
+  hideApiKeyModal();
+}
+
+function clearApiKey() {
+  _apiKey = null;
+  try { localStorage.removeItem('titw_api_key'); } catch(e) {}
+  document.getElementById('apikey-input').value = '';
+  updateApiKeyStatus(false);
+}
+
+function skipApiKey() {
+  hideApiKeyModal();
+}
+
+function updateApiKeyStatus(hasKey) {
+  const btn = document.getElementById('apikey-status-btn');
+  const label = document.getElementById('apikey-status-label');
+  if (hasKey) {
+    btn.classList.add('active');
+    label.textContent = 'Key saved ✓';
+    btn.title = 'API key saved to this browser — click to update or clear';
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'No API key';
+    btn.title = 'Click to set API key';
+  }
+}
+
+// Wrap fetch to inject key and handle auth errors gracefully
+async function claudeFetch(prompt, maxTokens = 600) {
+  const body = {
+    model: 'claude-sonnet-4-5-20250929',
+    max_tokens: maxTokens,
+    messages: [{ role: 'user', content: prompt }]
+  };
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: getApiHeaders(),
+    body: JSON.stringify(body)
+  });
+
+  // Log status for debugging
+  console.log('[claudeFetch] status:', response.status);
+
+  if (response.status === 401) {
+    showApiKeyModal();
+    throw new Error('API key required — 401 unauthorised');
+  }
+
+  const data = await response.json();
+  console.log('[claudeFetch] response:', JSON.stringify(data).slice(0, 200));
+
+  if (data.error) throw new Error(data.error.message || 'API error');
+  return data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+// Show key modal if not running inside Claude.ai
+loadState();
+loadApiKey();
+buildCategories('entry-categories', 'entry');
+buildCategories('exit-categories', 'exit');
+buildActivities();
+renderProgressBars();
+initStartingTab();
+if (!isClaudeAI() && !_apiKey) {
+  setTimeout(() => showApiKeyModal(), 600);
+}
+document.getElementById('timelineYears').value = state.years;
+document.querySelectorAll('.years-display').forEach(el => el.textContent = state.years);
+</script>
+</body>
+</html>
