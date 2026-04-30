@@ -1598,7 +1598,11 @@ function isClaudeAI() {
 }
 
 function getApiHeaders() {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
   if (_apiKey) headers['x-api-key'] = _apiKey;
   return headers;
 }
@@ -1665,7 +1669,7 @@ function updateApiKeyStatus(hasKey) {
 // Wrap fetch to inject key and handle auth errors gracefully
 async function claudeFetch(prompt, maxTokens = 600) {
   const body = {
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-5-20250929',
     max_tokens: maxTokens,
     messages: [{ role: 'user', content: prompt }]
   };
@@ -1674,12 +1678,18 @@ async function claudeFetch(prompt, maxTokens = 600) {
     headers: getApiHeaders(),
     body: JSON.stringify(body)
   });
+
+  // Log status for debugging
+  console.log('[claudeFetch] status:', response.status);
+
   if (response.status === 401) {
-    // Auth failed — show the modal
     showApiKeyModal();
-    throw new Error('API key required');
+    throw new Error('API key required — 401 unauthorised');
   }
+
   const data = await response.json();
+  console.log('[claudeFetch] response:', JSON.stringify(data).slice(0, 200));
+
   if (data.error) throw new Error(data.error.message || 'API error');
   return data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
 }
