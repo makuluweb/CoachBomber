@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Transition Evaluator v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root {
+    /* KPMG brand */
+    --kpmg-navy:#00338D;
+    --kpmg-mid:#005EB8;
+    --kpmg-bright:#0091DA;
+    --kpmg-light:#E6F2FA;
+    /* BHP brand */
+    --bhp-orange:#EF7622;
+    --bhp-orange-dark:#C2531C;
+    --bhp-orange-pale:#FDF0E6;
+    /* Neutral / UI */
+    --bg:#F4F6F9;
+    --surface:#FFFFFF;
+    --surface2:#EEF2F7;
+    --border:#C8D4E3;
+    --border-light:#DDE6F0;
+    /* Semantic */
+    --green:#1A7A4A;
+    --green-bg:#E6F4EC;
+    --red:#B8282A;
+    --red-bg:#FAEBEB;
+    --amber:#9B6C00;
+    --amber-bg:#FDF3DC;
+    /* Typography */
+    --text:#0A1628;
+    --text-dim:#3D5278;
+    --text-muted:#7A8FAD;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Open Sans',sans-serif;font-weight:400;min-height:100vh;overflow-x:hidden;}
+
+  /* Subtle diagonal stripe pattern for bg */
+  body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(135deg,rgba(0,51,141,.025) 0px,rgba(0,51,141,.025) 1px,transparent 1px,transparent 32px);pointer-events:none;z-index:0;}
+
+  /* ── TOP NAV BAR ── */
+  .topbar{background:var(--kpmg-navy);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:52px;position:relative;z-index:10;}
+  .topbar-brand{display:flex;align-items:center;gap:16px;}
+  .brand-kpmg{font-size:22px;font-weight:600;color:#fff;letter-spacing:.04em;font-family:'Open Sans',sans-serif;}
+  .brand-sep{width:1px;height:20px;background:rgba(255,255,255,.3);}
+  .brand-bhp{font-size:13px;font-weight:600;color:var(--bhp-orange);letter-spacing:.08em;text-transform:uppercase;}
+  .topbar-tag{font-size:10px;color:rgba(255,255,255,.5);font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;}
+
+  /* SETUP */
+  #setup-screen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;padding-top:52px;}
+  .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:48px;max-width:540px;width:100%;border-top:4px solid var(--kpmg-navy);}
+  .setup-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--kpmg-mid);margin-bottom:16px;}
+  .setup-card h2{font-size:26px;font-weight:300;margin-bottom:6px;line-height:1.2;color:var(--kpmg-navy);}
+  .setup-card h2 strong{font-weight:600;}
+  .setup-card h2 em{font-style:normal;color:var(--bhp-orange);font-weight:600;}
+  .setup-sub{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:32px;}
+  .field-group{margin-bottom:20px;}
+  .field-label{font-size:11px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;display:block;margin-bottom:7px;text-transform:uppercase;}
+  .field-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:11px 13px;outline:none;transition:border-color .2s;}
+  .field-input:focus{border-color:var(--kpmg-mid);box-shadow:0 0 0 3px rgba(0,94,184,.12);}
+  .field-input::placeholder{color:var(--text-muted);}
+  .setup-note{font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:8px;}
+  .btn-primary{width:100%;background:var(--kpmg-navy);color:#fff;border:none;padding:14px 20px;font-family:'Open Sans',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:600;transition:background .2s;margin-top:24px;}
+  .btn-primary:hover{background:var(--kpmg-mid);}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* MAIN */
+  .container{max-width:980px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+  .header{margin-bottom:32px;border-bottom:2px solid var(--border-light);padding-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .header-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--kpmg-mid);margin-bottom:8px;}
+  h1{font-size:clamp(20px,3.5vw,34px);font-weight:300;line-height:1.15;color:var(--kpmg-navy);}
+  h1 strong{font-weight:600;}
+  h1 em{font-style:normal;color:var(--bhp-orange);font-weight:600;}
+  .header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .btn-sm{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 13px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:border-color .2s,color .2s,background .2s;}
+  .btn-sm:hover{border-color:var(--kpmg-mid);color:var(--kpmg-navy);background:var(--kpmg-light);}
+  .btn-sm.accent{border-color:var(--kpmg-mid);color:var(--kpmg-mid);}
+  .btn-sm.accent:hover{background:var(--kpmg-light);}
+  .api-status{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;padding:6px 12px;border-radius:2px;display:flex;align-items:center;gap:6px;border:1px solid var(--border);color:var(--text-muted);text-transform:uppercase;}
+  .api-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);}
+  .api-status.connected .api-dot{background:var(--green);}
+  .api-status.connected{color:var(--green);border-color:rgba(26,122,74,.35);background:var(--green-bg);}
+
+  /* TABS */
+  .tab-bar{display:flex;border-bottom:2px solid var(--border-light);margin-bottom:32px;position:relative;z-index:1;}
+  .tab-btn{background:none;border:none;padding:12px 20px;font-family:'Open Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;}
+  .tab-btn.active{color:var(--kpmg-navy);border-bottom-color:var(--bhp-orange);}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  /* ROLE TABS */
+  .role-selector{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+  .role-tab{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid var(--border);border-radius:2px;cursor:pointer;transition:border-color .2s,background .2s;flex:1;min-width:140px;background:var(--surface);}
+  .role-tab.active{border-color:var(--kpmg-mid);background:var(--kpmg-light);border-left:3px solid var(--kpmg-navy);}
+  .role-tab-num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);}
+  .role-tab-name{font-size:12px;flex:1;font-weight:600;color:var(--kpmg-navy);}
+  .role-tab-score{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;color:var(--text-muted);}
+  .add-role-btn{padding:10px 16px;border:1px dashed var(--border);border-radius:2px;cursor:pointer;background:none;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;transition:border-color .2s,color .2s;align-self:center;}
+  .add-role-btn:hover{border-color:var(--kpmg-mid);color:var(--kpmg-mid);}
+
+  /* PROGRESS */
+  .progress-bar{display:flex;gap:3px;margin-bottom:28px;}
+  .progress-seg{height:3px;flex:1;background:var(--border-light);border-radius:3px;transition:background .4s;}
+  .progress-seg.done{background:var(--bhp-orange);}
+
+  /* DIMENSIONS */
+  .dimension{margin-bottom:12px;border:1px solid var(--border);border-radius:3px;overflow:hidden;transition:border-color .3s;background:var(--surface);}
+  .dimension:hover{border-color:var(--kpmg-mid);}
+  .dim-header{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface);cursor:pointer;user-select:none;border-left:4px solid transparent;transition:border-color .2s,background .2s;}
+  .dim-header.open{border-left-color:var(--bhp-orange);background:var(--kpmg-light);}
+  .dim-number{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kpmg-mid);min-width:22px;}
+  .dim-title-wrap{flex:1;}
+  .dim-title{font-size:14px;font-weight:600;color:var(--kpmg-navy);margin-bottom:2px;}
+  .dim-desc{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+  .dim-score-badge{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500;min-width:40px;text-align:right;color:var(--text-muted);transition:color .3s;}
+  .dim-weight{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;background:var(--surface2);padding:2px 7px;border-radius:2px;}
+  .chevron{font-size:10px;color:var(--text-muted);transition:transform .3s;}
+  .dim-header.open .chevron{transform:rotate(180deg);}
+  .dim-body{max-height:0;overflow:hidden;transition:max-height .5s ease;}
+  .dim-body.open{max-height:2000px;}
+  .dim-body-inner{padding:4px 18px 18px;border-top:1px solid var(--border-light);}
+
+  /* QUESTIONS */
+  .question-block{padding:16px 0;border-bottom:1px solid var(--border-light);}
+  .question-block:last-child{border-bottom:none;}
+  .q-text{font-size:13px;line-height:1.6;margin-bottom:5px;color:var(--text);}
+  .q-prompt{font-size:11px;color:var(--text-muted);margin-bottom:12px;font-style:italic;line-height:1.5;}
+  .slider-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-transform:uppercase;}
+  .slider-wrap{display:flex;align-items:center;gap:12px;}
+  input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:var(--border);outline:none;border-radius:3px;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--bhp-orange);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .15s;}
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15);}
+  .slider-val{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;min-width:26px;text-align:right;color:var(--bhp-orange);}
+  .q-notes{margin-top:10px;width:100%;background:var(--surface2);border:1px solid var(--border-light);border-radius:2px;color:var(--text-dim);font-family:'Open Sans',sans-serif;font-size:12px;padding:9px 11px;resize:vertical;min-height:50px;outline:none;transition:border-color .2s;}
+  .q-notes:focus{border-color:var(--kpmg-mid);box-shadow:0 0 0 2px rgba(0,94,184,.1);}
+  .q-notes::placeholder{color:var(--text-muted);}
+
+  /* RESULTS PANEL */
+  .results-panel{position:sticky;bottom:18px;background:var(--kpmg-navy);border:none;border-radius:3px;padding:16px 20px;display:flex;align-items:center;gap:18px;margin-top:32px;box-shadow:0 8px 32px rgba(0,51,141,.35);flex-wrap:wrap;}
+  .result-total{font-family:'IBM Plex Mono',monospace;font-size:44px;color:#fff;line-height:1;min-width:70px;font-weight:500;}
+  .result-meta{flex:1;min-width:140px;}
+  .result-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+  .result-verdict{font-size:13px;color:#fff;font-weight:600;margin-bottom:5px;}
+  .result-bars{display:flex;gap:8px;flex-wrap:wrap;}
+  .rbi{font-size:9px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:4px;}
+  .rbd{width:5px;height:5px;border-radius:50%;}
+  .result-actions{display:flex;gap:7px;flex-wrap:wrap;}
+  .btn-report{background:var(--bhp-orange);color:#fff;border:none;padding:10px 18px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:700;transition:background .2s;white-space:nowrap;}
+  .btn-report:hover{background:var(--bhp-orange-dark);}
+  .btn-report-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35);padding:10px 16px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:600;transition:background .2s,border-color .2s;white-space:nowrap;}
+  .btn-report-outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);}
+
+  /* AI INSIGHTS */
+  .ai-section{border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--surface);}
+  .ai-header{padding:14px 18px;background:var(--kpmg-navy);display:flex;align-items:center;gap:10px;justify-content:space-between;}
+  .ai-header-left{display:flex;align-items:center;gap:10px;}
+  .ai-badge{background:rgba(239,118,34,.2);border:1px solid var(--bhp-orange);border-radius:2px;padding:2px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--bhp-orange);}
+  .ai-title{font-size:13px;font-weight:600;color:#fff;}
+  .btn-generate{background:var(--bhp-orange);border:none;color:#fff;padding:7px 16px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:700;transition:background .2s;white-space:nowrap;}
+  .btn-generate:hover{background:var(--bhp-orange-dark);}
+  .btn-generate:disabled{opacity:.4;cursor:not-allowed;}
+  .ai-body{padding:20px;}
+  .ai-placeholder{font-size:12px;color:var(--text-muted);font-style:italic;text-align:center;padding:20px 0;}
+  .ai-content{display:none;}
+  .ai-content.visible{display:block;}
+  .ai-dim-block{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border-light);}
+  .ai-dim-block:last-child{border-bottom:none;}
+  .ai-dim-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--kpmg-mid);margin-bottom:7px;}
+  .ai-dim-text{font-size:13px;line-height:1.75;color:var(--text-dim);}
+  .ai-overall{background:var(--kpmg-light);border:1px solid rgba(0,94,184,.2);border-radius:2px;padding:18px;margin-top:20px;}
+  .ai-overall-title{font-size:13px;font-weight:700;color:var(--kpmg-navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
+  .ai-overall-text{font-size:13px;line-height:1.8;color:var(--text-dim);}
+  .typing-indicator{display:none;align-items:center;gap:8px;padding:20px 0;}
+  .typing-indicator.visible{display:flex;}
+  .typing-dot{width:7px;height:7px;border-radius:50%;background:var(--bhp-orange);animation:tp 1.2s infinite;}
+  .typing-dot:nth-child(2){animation-delay:.2s;}
+  .typing-dot:nth-child(3){animation-delay:.4s;}
+  @keyframes tp{0%,80%,100%{opacity:.3;transform:scale(.75);}40%{opacity:1;transform:scale(1);}}
+  .typing-label{font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-style:italic;}
+
+  /* COMPARE */
+  .compare-grid{display:grid;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:28px;}
+  .cg-header{background:var(--kpmg-navy);padding:11px 15px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);border-right:1px solid rgba(255,255,255,.15);}
+  .cg-header:first-child{color:rgba(255,255,255,.45);}
+  .cg-header:last-child{border-right:none;}
+  .cg-row-label{padding:12px 15px;font-size:11px;color:var(--text-dim);border-bottom:1px solid var(--border-light);border-right:1px solid var(--border-light);background:var(--surface2);display:flex;align-items:center;}
+  .cg-cell{padding:12px 15px;border-bottom:1px solid var(--border-light);border-right:1px solid var(--border-light);display:flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;background:var(--surface);}
+  .cg-cell:last-child,.cg-row-label:last-child{border-right:none;}
+  .cg-cell.best{background:var(--green-bg);}
+  .cg-cell.worst{background:var(--red-bg);}
+  .compare-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px;font-style:italic;}
+
+  /* MODAL */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,20,60,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-backdrop.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--kpmg-navy);border-radius:3px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:36px;}
+  .modal h2{font-size:22px;font-weight:300;margin-bottom:4px;color:var(--kpmg-navy);}
+  .modal h2 strong{font-weight:700;}
+  .modal-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:.1em;margin-bottom:24px;}
+  .report-score-hero{display:flex;align-items:flex-end;gap:16px;margin-bottom:24px;padding-bottom:24px;border-bottom:2px solid var(--border-light);}
+  .report-score-num{font-family:'IBM Plex Mono',monospace;font-size:72px;color:var(--kpmg-navy);line-height:1;font-weight:500;}
+  .report-verdict-big{font-size:16px;font-weight:700;color:var(--kpmg-navy);margin-bottom:5px;}
+  .report-verdict-sub{font-size:12px;color:var(--text-dim);line-height:1.5;max-width:300px;}
+  .report-section-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--kpmg-mid);margin:22px 0 10px;}
+  .dim-report-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--border-light);}
+  .dim-report-name{font-size:12px;font-weight:600;color:var(--kpmg-navy);}
+  .dim-report-flag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:2px;font-weight:600;letter-spacing:.05em;}
+  .flag-strength{background:var(--green-bg);color:var(--green);}
+  .flag-caution{background:var(--amber-bg);color:var(--amber);}
+  .flag-risk{background:var(--red-bg);color:var(--red);}
+  .dim-report-weighted{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;min-width:32px;text-align:right;}
+  .score-high{color:var(--green)!important;}
+  .score-mid{color:var(--amber)!important;}
+  .score-low{color:var(--red)!important;}
+  .note-entry{padding:11px 0;border-bottom:1px solid var(--border-light);}
+  .note-q{font-size:11px;color:var(--text-muted);margin-bottom:3px;font-style:italic;}
+  .note-text{font-size:12px;color:var(--text);line-height:1.6;}
+  .modal-close{display:block;width:100%;margin-top:24px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:11px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;border-radius:2px;font-weight:600;}
+  .modal-close:hover{background:var(--kpmg-light);color:var(--kpmg-navy);}
+  @media(max-width:600px){.setup-card{padding:28px;}.modal{padding:22px;}}
+
+  /* CUSTOM QUESTIONS */
+  .add-q-zone{padding:14px 0 4px;border-top:1px dashed var(--border);margin-top:4px;}
+  .btn-add-q{display:flex;align-items:center;gap:7px;background:none;border:1px dashed var(--border);border-radius:2px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:border-color .2s,color .2s,background .2s;width:100%;}
+  .btn-add-q:hover{border-color:var(--kpmg-mid);color:var(--kpmg-mid);background:var(--kpmg-light);}
+  .add-q-form{display:none;background:var(--kpmg-light);border:1px solid rgba(0,94,184,.25);border-radius:2px;padding:14px;margin-top:10px;}
+  .add-q-form.open{display:block;}
+  .add-q-form label{font-size:10px;color:var(--kpmg-navy);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;display:block;margin-bottom:5px;text-transform:uppercase;font-weight:600;}
+  .add-q-input{width:100%;background:#fff;border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Open Sans',sans-serif;font-size:12px;padding:8px 10px;outline:none;transition:border-color .2s;margin-bottom:10px;}
+  .add-q-input:focus{border-color:var(--kpmg-mid);box-shadow:0 0 0 2px rgba(0,94,184,.1);}
+  .add-q-input::placeholder{color:var(--text-muted);}
+  .add-q-actions{display:flex;gap:7px;}
+  .btn-add-q-save{background:var(--kpmg-navy);color:#fff;border:none;padding:8px 16px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:700;transition:background .2s;}
+  .btn-add-q-save:hover{background:var(--kpmg-mid);}
+  .btn-add-q-cancel{background:none;border:1px solid var(--border);color:var(--text-dim);padding:8px 14px;font-family:'Open Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:border-color .2s,color .2s;}
+  .btn-add-q-cancel:hover{border-color:var(--kpmg-mid);color:var(--kpmg-navy);}
+  .custom-badge{display:inline-block;background:var(--bhp-orange-pale);border:1px solid rgba(239,118,34,.4);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--bhp-orange-dark);margin-left:8px;vertical-align:middle;}
+  .btn-delete-q{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;padding:0 4px;line-height:1;transition:color .2s;float:right;margin-top:1px;}
+  .btn-delete-q:hover{color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-kpmg">KPMG</span>
+    <div class="brand-sep"></div>
+    <span class="brand-bhp">BHP</span>
+  </div>
+  <span class="topbar-tag">Career Transition Evaluator — v4.0</span>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-label">Career Transition Evaluator — v4.0</div>
+    <h2><strong>Partner → Executive</strong><br><em>AI-Powered Analysis</em></h2>
+    <p class="setup-sub">Score six weighted dimensions across one or more roles, add your own questions per section, then generate AI narrative commentary using claude-sonnet-4-6.</p>
+    <div class="field-group">
+      <label class="field-label">Your Name (for reports)</label>
+      <input class="field-input" id="setup-name" type="text" placeholder="e.g. Brad Morrison" />
+    </div>
+    <div class="field-group">
+      <label class="field-label">First Role to Evaluate</label>
+      <input class="field-input" id="setup-role1" type="text" placeholder="e.g. VP Technology — BHP Minerals Australia" />
+    </div>
+    <div class="field-group">
+      <label class="field-label">Anthropic API Key <span style="color:var(--text-muted)">(optional — enables AI insights)</span></label>
+      <input class="field-input" id="setup-apikey" type="password" placeholder="sk-ant-api03-…" autocomplete="off" />
+      <div class="setup-note">Stored in browser memory only. Used exclusively to call api.anthropic.com/v1/messages with model claude-sonnet-4-6. Never logged or transmitted elsewhere.</div>
+    </div>
+    <button class="btn-primary" onclick="launchApp()">Begin Evaluation ↗</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="container" id="main-app" style="display:none">
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Career Transition Evaluator — v4.0</div>
+      <h1><strong>Partner → Executive</strong><br><em>Transition Evaluator</em></h1>
+    </div>
+    <div class="header-actions">
+      <div class="api-status" id="apiStatusBadge"><span class="api-dot"></span><span id="apiStatusText">No API key</span></div>
+      <button class="btn-sm" onclick="showSetup()">⚙ Settings</button>
+      <button class="btn-sm accent" onclick="openReport()">Report ↗</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tbEvaluate" onclick="switchTab('evaluate',this)">Evaluate</button>
+    <button class="tab-btn" id="tbCompare" onclick="switchTab('compare',this)">Compare Roles</button>
+    <button class="tab-btn" id="tbInsights" onclick="switchTab('insights',this)">AI Insights</button>
+  </div>
+
+  <div class="tab-pane active" id="tab-evaluate">
+    <div class="role-selector" id="roleTabs"></div>
+    <div class="progress-bar" id="progressBar"></div>
+    <div id="dimensions-container"></div>
+    <div class="results-panel">
+      <div class="result-total" id="totalScore">—</div>
+      <div class="result-meta">
+        <div class="result-label">Weighted Score / 100</div>
+        <div class="result-verdict" id="verdictText">Complete the evaluation above</div>
+        <div class="result-bars" id="dimBars"></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-report-outline" onclick="openReport()">Full Report</button>
+        <button class="btn-report" onclick="switchTab('insights',document.getElementById('tbInsights'))">AI Analysis ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="tab-compare">
+    <div id="compare-content"></div>
+  </div>
+
+  <div class="tab-pane" id="tab-insights">
+    <div class="ai-section">
+      <div class="ai-header">
+        <div class="ai-header-left">
+          <span class="ai-badge">✦ claude-sonnet-4-6</span>
+          <span class="ai-title" id="insightRoleName">Current Role</span>
+        </div>
+        <button class="btn-generate" id="generateBtn" onclick="generateInsights()" disabled>Generate Analysis</button>
+      </div>
+      <div class="ai-body">
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          <span class="typing-label">claude-sonnet-4-6 is analysing your scores…</span>
+        </div>
+        <div class="ai-placeholder" id="aiPlaceholder">Complete scoring in the Evaluate tab, then click "Generate Analysis" for AI narrative commentary on each dimension and an overall recommendation.</div>
+        <div class="ai-content" id="aiContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h2><strong id="reportTitle">Transition Analysis Report</strong></h2>
+    <div class="modal-date" id="reportDate"></div>
+    <div class="report-score-hero">
+      <div class="report-score-num" id="reportScore">—</div>
+      <div><div class="report-verdict-big" id="reportVerdict">—</div><div class="report-verdict-sub" id="reportSub">—</div></div>
+    </div>
+    <div class="report-section-title">Dimension Breakdown</div>
+    <div id="dimBreakdown"></div>
+    <div class="report-section-title">Notes</div>
+    <div id="notesBreakdown"></div>
+    <button class="modal-close" onclick="closeReport()">Close Report</button>
+  </div>
+</div>
+
+<script>
+const DIMENSIONS=[
+  {id:'strategic',title:'Strategic & Career Logic',desc:'Role alignment · trajectory · mandate clarity',weight:.20,questions:[
+    {id:'sq1',text:'How well does this role align with the work you most want to do in the next 5 years?',prompt:'Advisory breadth vs. operational depth. Running P&L and teams vs. shaping strategy for many clients.'},
+    {id:'sq2',text:'Is the mandate clearly defined — scope, authority, and a problem worth solving?',prompt:'Vague roles in large companies can be career killers. Do you know what success looks like in 18 months?'},
+    {id:'sq3',text:'Does this move create forward optionality — or does it narrow your future choices?',prompt:'A CFO of a global miner opens doors. A "Head of Digital Transformation" may not. Think about the exit ramp.'},
+  ]},
+  {id:'commercial',title:'Commercial & Financial',desc:'Compensation · equity · long-term wealth',weight:.20,questions:[
+    {id:'cq1',text:'Does the total package (base + STI + LTI/equity) materially exceed your current earnings trajectory?',prompt:'Account for equity value at vesting, not just salary. A 3-year LTI cycle at a top-20 miner can be transformative.'},
+    {id:'cq2',text:'Have you fully costed the partnership benefits you would be giving up?',prompt:'Think: superannuation rates, profit share trajectory, business development expenses, CPD allowances, insurance.'},
+    {id:'cq3',text:'How financially resilient are you if this role ends after 2–3 years?',prompt:'Mining is cyclical. Executives get caught in restructures. What\'s the financial safety margin?'},
+  ]},
+  {id:'influence',title:'Influence & Impact',desc:'Authority · proximity to power · scale of decisions',weight:.18,questions:[
+    {id:'iq1',text:'Will you have genuine decision-making authority — real budget, people, and strategic accountability?',prompt:'Distinguish influence (advisory) from authority (executive). Many "VP" roles in large miners are still advisory.'},
+    {id:'iq2',text:'How close is this role to the CEO and Board — and does that proximity give you meaningful leverage?',prompt:'The ability to shape capital allocation or M&A priorities at enterprise scale is rare. Does this role deliver that?'},
+    {id:'iq3',text:'Does the scale and permanence of the impact excite you — changing a company, not just a report?',prompt:'Some people find operator roles more fulfilling. Others miss advisory variety within 6 months.'},
+  ]},
+  {id:'culture',title:'Culture & Organisation Fit',desc:'Sector norms · leadership style · political dynamics',weight:.17,questions:[
+    {id:'cu1',text:'Do you understand and respect mining company culture — and can you operate effectively within it?',prompt:'Mining is operationally driven, safety-first, often conservative. Big Four culture rewards individual brilliance.'},
+    {id:'cu2',text:'Do you have a clear internal sponsor who will advocate for you?',prompt:'Walking into a large miner without a sponsor is high-risk. Political capital takes years to build organically.'},
+    {id:'cu3',text:'How well do you know the leadership team, and do you believe in their direction?',prompt:'You\'re betting on a CEO\'s agenda. Is it compelling and durable?'},
+  ]},
+  {id:'personal',title:'Personal & Lifestyle',desc:'Family · identity · mobility · wellbeing',weight:.15,questions:[
+    {id:'pq1',text:'Are your family fully aligned and prepared for the lifestyle implications of this role?',prompt:'Global roles often mean travel, potential relocation, and loss of advisory flexibility.'},
+    {id:'pq2',text:'How strongly is your professional identity tied to the Big Four / "Partner" brand?',prompt:'Some people underestimate how much identity is wrapped in the firm. The title changes. So does how others see you.'},
+    {id:'pq3',text:'Does this move improve or protect your personal wellbeing and sense of purpose?',prompt:'Partnership track is intense. So is an executive role. But the nature of the pressure differs significantly.'},
+  ]},
+  {id:'network',title:'Network & Credibility',desc:'Relationship capital · re-entry options · brand',weight:.10,questions:[
+    {id:'nq1',text:'Will you maintain your professional network — or does this role risk isolating you from the advisory market?',prompt:'Relationships with CEOs and Boards don\'t last forever once you\'re on the inside.'},
+    {id:'nq2',text:'Is there a plausible re-entry path if you want to return to consulting or NED roles?',prompt:'An executive stint at a global miner can enhance consulting credentials enormously — if positioned correctly.'},
+  ]},
+];
+
+// State
+let apiKey='',userName='',roles=[],activeRoleIdx=0,openDim=null;
+// customQuestions: { [dimId]: [{id, text, prompt}] } — shared across all roles
+let customQuestions={};
+DIMENSIONS.forEach(d=>{customQuestions[d.id]=[];});
+let customQCounter=0;
+
+function newRole(name){
+  const s={},n={};
+  DIMENSIONS.forEach(d=>{
+    d.questions.forEach(q=>{s[q.id]=5;n[q.id]='';});
+    // also seed any existing custom questions
+    (customQuestions[d.id]||[]).forEach(q=>{s[q.id]=5;n[q.id]='';});
+  });
+  return{name,scores:s,notes:n,aiContent:null};
+}
+
+function seedRoleForCustomQ(qId){
+  // When a new custom question is added, ensure all existing roles have a slot for it
+  roles.forEach(r=>{
+    if(r.scores[qId]===undefined){r.scores[qId]=5;}
+    if(r.notes[qId]===undefined){r.notes[qId]='';}
+  });
+}
+
+// ── CUSTOM QUESTION MANAGEMENT ──
+function getAllQuestionsForDim(dim){
+  return [...dim.questions,...(customQuestions[dim.id]||[])];
+}
+
+function showAddQForm(dimId){
+  document.getElementById('addQForm-'+dimId).classList.add('open');
+  document.getElementById('addQBtn-'+dimId).style.display='none';
+  document.getElementById('addQText-'+dimId).focus();
+}
+
+function hideAddQForm(dimId){
+  document.getElementById('addQForm-'+dimId).classList.remove('open');
+  document.getElementById('addQBtn-'+dimId).style.display='flex';
+  document.getElementById('addQText-'+dimId).value='';
+  document.getElementById('addQPrompt-'+dimId).value='';
+}
+
+function saveCustomQ(dimId){
+  const textEl=document.getElementById('addQText-'+dimId);
+  const promptEl=document.getElementById('addQPrompt-'+dimId);
+  const text=textEl.value.trim();
+  if(!text){textEl.style.borderColor='var(--red)';setTimeout(()=>textEl.style.borderColor='',1200);return;}
+  const qId='cust_'+dimId+'_'+(++customQCounter);
+  const q={id:qId,text,prompt:promptEl.value.trim(),custom:true};
+  customQuestions[dimId].push(q);
+  seedRoleForCustomQ(qId);
+  hideAddQForm(dimId);
+  // Invalidate AI cache for all roles
+  roles.forEach(r=>r.aiContent=null);
+  // Re-render dimensions (keep current dim open)
+  const wasOpen=openDim;
+  renderDimensions();
+  if(wasOpen){
+    const body=document.getElementById('body-'+wasOpen);
+    const hdr=document.getElementById('hdr-'+wasOpen);
+    if(body&&hdr){body.classList.add('open');hdr.classList.add('open');openDim=wasOpen;}
+  }
+  updateResults();
+  renderRoleTabs();
+}
+
+function deleteCustomQ(dimId,qId){
+  customQuestions[dimId]=customQuestions[dimId].filter(q=>q.id!==qId);
+  roles.forEach(r=>{delete r.scores[qId];delete r.notes[qId];r.aiContent=null;});
+  const wasOpen=openDim;
+  renderDimensions();
+  if(wasOpen){
+    const body=document.getElementById('body-'+wasOpen);
+    const hdr=document.getElementById('hdr-'+wasOpen);
+    if(body&&hdr){body.classList.add('open');hdr.classList.add('open');openDim=wasOpen;}
+  }
+  updateResults();
+  renderRoleTabs();
+}
+
+// Setup
+function launchApp(){
+  userName=document.getElementById('setup-name').value.trim()||'Evaluator';
+  const r1=document.getElementById('setup-role1').value.trim()||'Role A';
+  apiKey=document.getElementById('setup-apikey').value.trim();
+  roles=[newRole(r1)];
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  updateApiStatus();
+  renderRoleTabs();
+  renderDimensions();
+}
+
+function showSetup(){
+  document.getElementById('setup-apikey').value=apiKey;
+  document.getElementById('setup-name').value=userName;
+  document.getElementById('setup-screen').style.display='flex';
+}
+
+function updateApiStatus(){
+  const badge=document.getElementById('apiStatusBadge');
+  const txt=document.getElementById('apiStatusText');
+  if(apiKey){badge.classList.add('connected');txt.textContent='API Connected';}
+  else{badge.classList.remove('connected');txt.textContent='No API Key';}
+  const gb=document.getElementById('generateBtn');
+  if(gb)gb.disabled=!apiKey;
+}
+
+// Tabs
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='compare')renderCompare();
+  if(id==='insights'){
+    document.getElementById('insightRoleName').textContent=roles[activeRoleIdx]?.name||'';
+    const gb=document.getElementById('generateBtn');
+    if(gb)gb.disabled=!apiKey;
+    const cached=roles[activeRoleIdx]?.aiContent;
+    if(cached)showAiContent(cached);
+  }
+}
+
+// Role management
+function renderRoleTabs(){
+  const c=document.getElementById('roleTabs');
+  c.innerHTML='';
+  roles.forEach((role,i)=>{
+    const t=document.createElement('div');
+    t.className='role-tab'+(i===activeRoleIdx?' active':'');
+    t.onclick=()=>selectRole(i);
+    const sc=getRoleScore(role);
+    const scCl=scoreClass(sc/10);
+    t.innerHTML=`<span class="role-tab-num">0${i+1}</span><span class="role-tab-name">${role.name}</span><span class="role-tab-score ${scCl}">${sc}</span>`;
+    c.appendChild(t);
+  });
+  if(roles.length<3){
+    const ab=document.createElement('button');
+    ab.className='add-role-btn';
+    ab.textContent='+ Add Role';
+    ab.onclick=addRole;
+    c.appendChild(ab);
+  }
+}
+
+function selectRole(idx){activeRoleIdx=idx;renderRoleTabs();renderDimensions();updateResults();}
+
+function addRole(){
+  const name=prompt('Name this role:')||`Role ${roles.length+1}`;
+  roles.push(newRole(name));
+  activeRoleIdx=roles.length-1;
+  renderRoleTabs();
+  renderDimensions();
+  updateResults();
+}
+
+function getRoleScore(role){
+  let w=0;
+  DIMENSIONS.forEach(d=>{
+    const avg=d.questions.reduce((a,q)=>a+(role.scores[q.id]||5),0)/d.questions.length;
+    w+=avg*d.weight;
+  });
+  return Math.round(w*10);
+}
+
+// Dimensions
+function renderDimensions(){
+  const c=document.getElementById('dimensions-container');
+  const pb=document.getElementById('progressBar');
+  c.innerHTML='';pb.innerHTML='';openDim=null;
+  const role=roles[activeRoleIdx];
+  DIMENSIONS.forEach((dim,di)=>{
+    const seg=document.createElement('div');
+    seg.className='progress-seg done';
+    seg.id='seg-'+dim.id;
+    pb.appendChild(seg);
+
+    const block=document.createElement('div');
+    block.className='dimension';
+
+    const allQ=getAllQuestionsForDim(dim);
+    const customCount=(customQuestions[dim.id]||[]).length;
+    const customLabel=customCount>0?` <span class="custom-badge">+${customCount} custom</span>`:'';
+
+    const hdr=document.createElement('div');
+    hdr.className='dim-header';
+    hdr.id='hdr-'+dim.id;
+    hdr.innerHTML=`<span class="dim-number">0${di+1}</span><div class="dim-title-wrap"><div class="dim-title">${dim.title}${customLabel}</div><div class="dim-desc">${dim.desc}</div></div><span class="dim-weight">×${Math.round(dim.weight*100)}%</span><span class="dim-score-badge" id="badge-${dim.id}">—</span><span class="chevron">▼</span>`;
+    hdr.onclick=()=>toggleDim(dim.id,hdr);
+
+    const body=document.createElement('div');
+    body.className='dim-body';
+    body.id='body-'+dim.id;
+    const inner=document.createElement('div');
+    inner.className='dim-body-inner';
+
+    // Render all questions (built-in + custom)
+    allQ.forEach(q=>{
+      const val=role.scores[q.id]||5;
+      const note=role.notes[q.id]||'';
+      const isCustom=!!q.custom;
+      const qb=document.createElement('div');
+      qb.className='question-block';
+      const deleteBtn=isCustom?`<button class="btn-delete-q" title="Remove this question" onclick="deleteCustomQ('${dim.id}','${q.id}')">✕</button>`:'';
+      const customTag=isCustom?`<span class="custom-badge">custom</span>`:'';
+      qb.innerHTML=`
+        <div class="q-text">${deleteBtn}${q.text} ${customTag}</div>
+        ${q.prompt?`<div class="q-prompt">${q.prompt}</div>`:''}
+        <div class="slider-labels"><span>Critical concern</span><span>Strong advantage</span></div>
+        <div class="slider-wrap">
+          <input type="range" min="1" max="10" value="${val}" oninput="onScore('${q.id}','${dim.id}',this.value)"/>
+          <span class="slider-val" id="val-${q.id}">${val}</span>
+        </div>
+        <textarea class="q-notes" placeholder="Optional notes…" oninput="onNote('${q.id}',this.value)">${note}</textarea>
+      `;
+      inner.appendChild(qb);
+    });
+
+    // Add question zone
+    const addZone=document.createElement('div');
+    addZone.className='add-q-zone';
+    addZone.innerHTML=`
+      <button class="btn-add-q" id="addQBtn-${dim.id}" onclick="showAddQForm('${dim.id}')">
+        <span style="font-size:14px;line-height:1">+</span> Add your own question
+      </button>
+      <div class="add-q-form" id="addQForm-${dim.id}">
+        <label>Question text <span style="color:var(--red)">*</span></label>
+        <input class="add-q-input" id="addQText-${dim.id}" type="text" placeholder="e.g. Have I spoken to the current role-holder?" />
+        <label>Guidance prompt <span style="color:var(--text-muted)">(optional — shown below the question)</span></label>
+        <input class="add-q-input" id="addQPrompt-${dim.id}" type="text" placeholder="e.g. Understanding the departure circumstances can reveal org health." />
+        <div class="add-q-actions">
+          <button class="btn-add-q-save" onclick="saveCustomQ('${dim.id}')">Save Question</button>
+          <button class="btn-add-q-cancel" onclick="hideAddQForm('${dim.id}')">Cancel</button>
+        </div>
+      </div>
+    `;
+    inner.appendChild(addZone);
+
+    body.appendChild(inner);
+    block.appendChild(hdr);
+    block.appendChild(body);
+    c.appendChild(block);
+    updateDimBadge(dim.id);
+  });
+  updateResults();
+}
+
+function toggleDim(id,hdr){
+  if(openDim&&openDim!==id){
+    document.getElementById('body-'+openDim)?.classList.remove('open');
+    document.getElementById('hdr-'+openDim)?.classList.remove('open');
+  }
+  const body=document.getElementById('body-'+id);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  hdr.classList.toggle('open',!isOpen);
+  openDim=isOpen?null:id;
+}
+
+function onScore(qId,dimId,val){
+  roles[activeRoleIdx].scores[qId]=parseInt(val);
+  roles[activeRoleIdx].aiContent=null;
+  document.getElementById('val-'+qId).textContent=val;
+  updateDimBadge(dimId);
+  updateResults();
+  renderRoleTabs();
+}
+
+function onNote(qId,val){roles[activeRoleIdx].notes[qId]=val;roles[activeRoleIdx].aiContent=null;}
+
+function getDimAvg(dim,role){
+  const allQ=getAllQuestionsForDim(dim);
+  return allQ.reduce((a,q)=>a+(role.scores[q.id]||5),0)/allQ.length;
+}
+
+function updateDimBadge(dimId){
+  const dim=DIMENSIONS.find(d=>d.id===dimId);
+  const avg=getDimAvg(dim,roles[activeRoleIdx]);
+  const badge=document.getElementById('badge-'+dimId);
+  if(badge){badge.textContent=avg.toFixed(1);badge.className='dim-score-badge '+scoreClass(avg);}
+}
+
+function scoreClass(v){return v>=7?'score-high':v>=4.5?'score-mid':'score-low';}
+
+function updateResults(){
+  const role=roles[activeRoleIdx];
+  const total=getRoleScore(role);
+  const tel=document.getElementById('totalScore');
+  if(!tel)return;
+  tel.textContent=total;
+  tel.className='result-total '+scoreClass(total/10);
+  document.getElementById('verdictText').textContent=getVerdict(total).verdict;
+  document.getElementById('dimBars').innerHTML=DIMENSIONS.map(dim=>{
+    const avg=getDimAvg(dim,role);
+    const cl=scoreClass(avg);
+    const col=cl==='score-high'?'#4a9e6b':cl==='score-mid'?'#e8a840':'#c25f5f';
+    return `<span class="rbi"><span class="rbd" style="background:${col}"></span>${dim.title.split(' ')[0]}: ${avg.toFixed(1)}</span>`;
+  }).join('');
+}
+
+function getVerdict(s){
+  if(s>=80)return{verdict:'Strong case to proceed',sub:'Evidence across dimensions supports this move. Focus on negotiating terms and securing your sponsor.'};
+  if(s>=65)return{verdict:'Cautiously constructive',sub:'More positives than negatives, but material gaps exist. Address your lowest-scoring dimensions.'};
+  if(s>=50)return{verdict:'Proceed with significant conditions',sub:'Material risks present. Do not proceed without resolving the critical concerns identified.'};
+  return{verdict:'High risk — pause and reassess',sub:'Current evidence does not support this transition. Revisit offer structure and personal alignment.'};
+}
+
+// Compare
+function renderCompare(){
+  const c=document.getElementById('compare-content');
+  if(roles.length<2){c.innerHTML='<div class="compare-empty">Add at least two roles using "+ Add Role" in the Evaluate tab to compare them here.</div>';return;}
+  const cols=roles.length;
+  const grid=document.createElement('div');
+  grid.className='compare-grid';
+  grid.style.gridTemplateColumns=`180px repeat(${cols},1fr)`;
+
+  // Headers
+  const bh=document.createElement('div');bh.className='cg-header';bh.textContent='Dimension';grid.appendChild(bh);
+  roles.forEach(r=>{const h=document.createElement('div');h.className='cg-header';h.textContent=r.name;grid.appendChild(h);});
+
+  // Dim rows
+  DIMENSIONS.forEach(dim=>{
+    const avgs=roles.map(r=>getDimAvg(dim,r));
+    const mx=Math.max(...avgs),mn=Math.min(...avgs);
+    const lbl=document.createElement('div');lbl.className='cg-row-label';
+    lbl.innerHTML=`<span style="font-size:11px">${dim.title}<br><span style="color:var(--text-muted);font-size:9px;font-family:'IBM Plex Mono',monospace">×${Math.round(dim.weight*100)}%</span></span>`;
+    grid.appendChild(lbl);
+    avgs.forEach(avg=>{
+      const cell=document.createElement('div');
+      cell.className='cg-cell'+(cols>1&&avg===mx&&avg!==mn?' best':'')+(cols>1&&avg===mn&&avg!==mx?' worst':'');
+      cell.innerHTML=`<span class="${scoreClass(avg)}">${avg.toFixed(1)}</span>`;
+      grid.appendChild(cell);
+    });
+  });
+
+  // Total row
+  const tl=document.createElement('div');tl.className='cg-row-label';tl.style.borderBottom='none';
+  tl.innerHTML='<span style="font-weight:500;color:var(--text)">Overall Score</span>';grid.appendChild(tl);
+  const totals=roles.map(r=>getRoleScore(r));
+  const mxt=Math.max(...totals),mnt=Math.min(...totals);
+  totals.forEach(t=>{
+    const cell=document.createElement('div');
+    cell.className='cg-cell'+(cols>1&&t===mxt&&t!==mnt?' best':'')+(cols>1&&t===mnt&&t!==mxt?' worst':'');
+    cell.style.cssText='border-bottom:none;font-size:18px;';
+    cell.innerHTML=`<span class="${scoreClass(t/10)}">${t}</span>`;
+    grid.appendChild(cell);
+  });
+
+  c.innerHTML='';c.appendChild(grid);
+}
+
+// AI Insights
+async function generateInsights(){
+  if(!apiKey){alert('Add your Anthropic API key in Settings first.');return;}
+  const role=roles[activeRoleIdx];
+  const btn=document.getElementById('generateBtn');
+  const typing=document.getElementById('typingIndicator');
+  const placeholder=document.getElementById('aiPlaceholder');
+  const content=document.getElementById('aiContent');
+  btn.disabled=true;
+  typing.classList.add('visible');
+  placeholder.style.display='none';
+  content.classList.remove('visible');
+
+  const scoreSummary=DIMENSIONS.map(dim=>{
+    const avg=getDimAvg(dim,role);
+    const allQ=getAllQuestionsForDim(dim);
+    const notesArr=allQ.filter(q=>role.notes[q.id]?.trim()).map(q=>`"${role.notes[q.id].trim()}"`).join('; ');
+    const customQList=(customQuestions[dim.id]||[]).map(q=>`"${q.text}" (score: ${role.scores[q.id]||5}/10)`).join(', ');
+    const customNote=customQList?` Custom questions added: ${customQList}.`:'';
+    return `- ${dim.title} (weight ${Math.round(dim.weight*100)}%): avg ${avg.toFixed(1)}/10${customNote}${notesArr?` — Notes: ${notesArr}`:''}`;
+  }).join('\n');
+
+  const total=getRoleScore(role);
+  const{verdict}=getVerdict(total);
+
+  const prompt=`You are a senior executive career advisor specialising in transitions from Big Four professional services (KPMG, Deloitte, PwC, EY) to global mining and resources companies.
+
+Person: ${userName} — Senior Partner considering a move to: "${role.name}"
+Overall weighted score: ${total}/100 (${verdict})
+
+Self-assessment scores:
+${scoreSummary}
+
+Task: Write candid, specific advisory narrative. For each of the six dimensions, provide 2–3 sentences that: (1) interpret what the score signals about readiness or risk in this specific transition context, (2) identify the most important question or action they should take. Then write an overall recommendation paragraph (4–5 sentences) synthesising the picture.
+
+Be direct — this is a senior professional who values honest assessment over reassurance. Reference the mining/Big Four transition context specifically. Do not use bullet points.
+
+Respond with pure JSON only — no markdown, no preamble:
+{
+  "dimensions": {
+    "strategic": "...",
+    "commercial": "...",
+    "influence": "...",
+    "culture": "...",
+    "personal": "...",
+    "network": "..."
+  },
+  "overall": "..."
+}`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||`API ${resp.status}`);}
+    const data=await resp.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    roles[activeRoleIdx].aiContent=parsed;
+    showAiContent(parsed);
+  }catch(err){
+    content.innerHTML=`<div style="color:var(--red);font-size:13px;padding:16px 0">Error: ${err.message}<br><span style="color:var(--text-muted);font-size:11px">Check your API key and try again.</span></div>`;
+    content.classList.add('visible');
+  }finally{
+    typing.classList.remove('visible');
+    btn.disabled=false;
+  }
+}
+
+function showAiContent(parsed){
+  const content=document.getElementById('aiContent');
+  document.getElementById('aiPlaceholder').style.display='none';
+  const dimMap={strategic:'Strategic & Career Logic',commercial:'Commercial & Financial',influence:'Influence & Impact',culture:'Culture & Organisation Fit',personal:'Personal & Lifestyle',network:'Network & Credibility'};
+  let html='';
+  Object.entries(parsed.dimensions||{}).forEach(([k,v])=>{
+    html+=`<div class="ai-dim-block"><div class="ai-dim-title">${dimMap[k]||k}</div><div class="ai-dim-text">${v}</div></div>`;
+  });
+  if(parsed.overall){
+    html+=`<div class="ai-overall"><div class="ai-overall-title">Overall Recommendation</div><div class="ai-overall-text">${parsed.overall}</div></div>`;
+  }
+  content.innerHTML=html;
+  content.classList.add('visible');
+}
+
+// Report
+function openReport(){
+  const role=roles[activeRoleIdx];
+  const total=getRoleScore(role);
+  const{verdict,sub}=getVerdict(total);
+  document.getElementById('reportTitle').textContent=`Analysis: ${role.name}`;
+  document.getElementById('reportScore').textContent=total;
+  document.getElementById('reportScore').className='report-score-num '+scoreClass(total/10);
+  document.getElementById('reportVerdict').textContent=verdict;
+  document.getElementById('reportSub').textContent=sub;
+  document.getElementById('reportDate').textContent=`${userName} — ${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}`;
+  document.getElementById('dimBreakdown').innerHTML=DIMENSIONS.map(dim=>{
+    const avg=getDimAvg(dim,role);
+    const wt=(avg*dim.weight*10).toFixed(1);
+    const cl=scoreClass(avg);
+    const ft=avg>=7?'↑ Strength':avg>=4.5?'→ Neutral':'↓ Risk';
+    const fc=avg>=7?'flag-strength':avg>=4.5?'flag-caution':'flag-risk';
+    return `<div class="dim-report-row"><div><div class="dim-report-name">${dim.title}</div><div style="font-size:9px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px">Avg ${avg.toFixed(1)}/10 · Weight ${Math.round(dim.weight*100)}%</div></div><div class="dim-report-flag ${fc}">${ft}</div><div class="dim-report-weighted ${cl}">${wt}</div></div>`;
+  }).join('');
+  let notesHtml='';let hasNotes=false;
+  DIMENSIONS.forEach(dim=>{
+    const allQ=getAllQuestionsForDim(dim);
+    allQ.forEach(q=>{
+      const n=role.notes[q.id]?.trim();
+      if(n){hasNotes=true;notesHtml+=`<div class="note-entry"><div class="note-q">${q.text}${q.custom?' <span class="custom-badge">custom</span>':''}</div><div class="note-text">${n}</div></div>`;}
+    });
+  });
+  document.getElementById('notesBreakdown').innerHTML=hasNotes?notesHtml:'<div style="font-size:12px;color:var(--text-muted);padding:12px 0">No notes recorded.</div>';
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+function closeReport(){document.getElementById('modalBackdrop').classList.remove('open');}
+document.getElementById('modalBackdrop').onclick=function(e){if(e.target===this)closeReport();};
+</script>
+</body>
+</html>
