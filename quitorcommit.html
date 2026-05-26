@@ -239,6 +239,56 @@
   .custom-badge{display:inline-block;background:var(--bhp-orange-pale);border:1px solid rgba(239,118,34,.4);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--bhp-orange-dark);margin-left:8px;vertical-align:middle;}
   .btn-delete-q{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;padding:0 4px;line-height:1;transition:color .2s;float:right;margin-top:1px;}
   .btn-delete-q:hover{color:var(--red);}
+
+  /* PRINT / PDF EXPORT */
+  #print-zone{display:none;}
+  @media print{
+    body>*{display:none!important;}
+    #print-zone{display:block!important;font-family:'Open Sans',sans-serif;color:#0A1628;background:#fff;}
+    .pz-topbar{background:#00338D;color:#fff;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;}
+    .pz-brand{font-size:18px;font-weight:700;letter-spacing:.04em;}
+    .pz-brand span{color:#EF7622;}
+    .pz-tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;font-family:'IBM Plex Mono',monospace;}
+    .pz-hero{background:#00338D;color:#fff;padding:32px 32px 28px;border-bottom:4px solid #EF7622;}
+    .pz-role{font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;}
+    .pz-title{font-size:26px;font-weight:700;margin-bottom:4px;}
+    .pz-sub{font-size:13px;opacity:.7;}
+    .pz-score-row{display:flex;align-items:flex-end;gap:20px;margin-top:20px;}
+    .pz-score-num{font-size:72px;font-weight:700;line-height:1;color:#EF7622;font-family:'IBM Plex Mono',monospace;}
+    .pz-score-meta{padding-bottom:8px;}
+    .pz-verdict{font-size:17px;font-weight:700;margin-bottom:4px;}
+    .pz-verdict-sub{font-size:12px;opacity:.7;max-width:320px;line-height:1.5;}
+    .pz-body{padding:28px 32px;}
+    .pz-section{margin-bottom:28px;}
+    .pz-section-title{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#005EB8;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #E6F2FA;}
+    .pz-dim-row{display:grid;grid-template-columns:1fr 80px 60px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #EEF2F7;}
+    .pz-dim-name{font-size:12px;font-weight:600;color:#00338D;}
+    .pz-dim-sub{font-size:9px;color:#7A8FAD;font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+    .pz-dim-flag{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:2px;text-align:center;font-weight:600;}
+    .pz-dim-wt{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;text-align:right;}
+    .pz-flag-s{background:#E6F4EC;color:#1A7A4A;}
+    .pz-flag-c{background:#FDF3DC;color:#9B6C00;}
+    .pz-flag-r{background:#FAEBEB;color:#B8282A;}
+    .pz-score-s{color:#1A7A4A;}
+    .pz-score-c{color:#9B6C00;}
+    .pz-score-r{color:#B8282A;}
+    .pz-ai-dim{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #EEF2F7;}
+    .pz-ai-dim:last-child{border-bottom:none;}
+    .pz-ai-dim-title{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#005EB8;font-family:'IBM Plex Mono',monospace;margin-bottom:5px;}
+    .pz-ai-dim-text{font-size:12px;line-height:1.75;color:#3D5278;}
+    .pz-overall{background:#E6F2FA;border-left:4px solid #00338D;padding:16px 18px;border-radius:0 2px 2px 0;margin-top:8px;}
+    .pz-overall-title{font-size:10px;font-weight:700;color:#00338D;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+    .pz-overall-text{font-size:12px;line-height:1.8;color:#3D5278;}
+    .pz-note{padding:9px 0;border-bottom:1px solid #EEF2F7;}
+    .pz-note-q{font-size:10px;color:#7A8FAD;margin-bottom:3px;font-style:italic;}
+    .pz-note-text{font-size:12px;color:#0A1628;line-height:1.6;}
+    .pz-footer{background:#F4F6F9;border-top:2px solid #E6F2FA;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;margin-top:20px;}
+    .pz-footer-brand{font-size:12px;font-weight:700;color:#00338D;}
+    .pz-footer-brand span{color:#EF7622;}
+    .pz-footer-note{font-size:9px;color:#7A8FAD;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;}
+    .pz-no-ai{font-size:12px;color:#7A8FAD;font-style:italic;padding:12px 0;}
+    @page{margin:0;size:A4;}
+  }
 </style>
 </head>
 <body>
@@ -246,9 +296,9 @@
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-brand">
-    <span class="brand-kpmg">KPMG</span>
+    <span class="brand-kpmg">Quit</span>
     <div class="brand-sep"></div>
-    <span class="brand-bhp">BHP</span>
+    <span class="brand-bhp">or Commit?</span>
   </div>
   <span class="topbar-tag">Career Transition Evaluator — v4.0</span>
 </div>
@@ -352,9 +402,15 @@
     <div id="dimBreakdown"></div>
     <div class="report-section-title">Notes</div>
     <div id="notesBreakdown"></div>
-    <button class="modal-close" onclick="closeReport()">Close Report</button>
+    <div style="display:flex;gap:10px;margin-top:24px;">
+      <button class="btn-primary" style="margin-top:0;flex:1;" onclick="exportPDF()">⬇ Export PDF (Report + AI Analysis)</button>
+      <button class="modal-close" style="margin-top:0;flex:0 0 auto;width:auto;padding:10px 20px;" onclick="closeReport()">Close</button>
+    </div>
   </div>
 </div>
+
+<!-- HIDDEN PRINT ZONE -->
+<div id="print-zone"></div>
 
 <script>
 const DIMENSIONS=[
@@ -870,6 +926,94 @@ function openReport(){
 
 function closeReport(){document.getElementById('modalBackdrop').classList.remove('open');}
 document.getElementById('modalBackdrop').onclick=function(e){if(e.target===this)closeReport();};
+
+// PDF EXPORT
+function exportPDF(){
+  const role=roles[activeRoleIdx];
+  const total=getRoleScore(role);
+  const{verdict,sub}=getVerdict(total);
+  const dateStr=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const dimMap={strategic:'Strategic & Career Logic',commercial:'Commercial & Financial',influence:'Influence & Impact',culture:'Culture & Organisation Fit',personal:'Personal & Lifestyle',network:'Network & Credibility'};
+
+  // Score colour helpers
+  function sc(v){return v>=7?'pz-score-s':v>=4.5?'pz-score-c':'pz-score-r';}
+  function fc(v){return v>=7?'pz-flag-s':v>=4.5?'pz-flag-c':'pz-flag-r';}
+  function ft(v){return v>=7?'↑ Strength':v>=4.5?'→ Neutral':'↓ Risk';}
+
+  // Dimension rows
+  const dimRows=DIMENSIONS.map(dim=>{
+    const avg=getDimAvg(dim,role);
+    const wt=(avg*dim.weight*10).toFixed(1);
+    return `<div class="pz-dim-row">
+      <div><div class="pz-dim-name">${dim.title}</div><div class="pz-dim-sub">Avg ${avg.toFixed(1)}/10 · Weight ${Math.round(dim.weight*100)}%</div></div>
+      <div class="pz-dim-flag ${fc(avg)}">${ft(avg)}</div>
+      <div class="pz-dim-wt ${sc(avg)}">${wt}</div>
+    </div>`;
+  }).join('');
+
+  // Notes
+  let notesHTML='';
+  DIMENSIONS.forEach(dim=>{
+    getAllQuestionsForDim(dim).forEach(q=>{
+      const n=role.notes[q.id]?.trim();
+      if(n) notesHTML+=`<div class="pz-note"><div class="pz-note-q">${q.text}</div><div class="pz-note-text">${n}</div></div>`;
+    });
+  });
+  if(!notesHTML) notesHTML='<div class="pz-no-ai">No notes recorded.</div>';
+
+  // AI Analysis
+  const ai=role.aiContent;
+  let aiHTML='';
+  if(ai){
+    Object.entries(ai.dimensions||{}).forEach(([k,v])=>{
+      aiHTML+=`<div class="pz-ai-dim"><div class="pz-ai-dim-title">${dimMap[k]||k}</div><div class="pz-ai-dim-text">${v}</div></div>`;
+    });
+    if(ai.overall){
+      aiHTML+=`<div class="pz-overall"><div class="pz-overall-title">Overall Recommendation</div><div class="pz-overall-text">${ai.overall}</div></div>`;
+    }
+  } else {
+    aiHTML='<div class="pz-no-ai">AI analysis not yet generated. Return to the AI Insights tab, generate the analysis, then export again.</div>';
+  }
+
+  document.getElementById('print-zone').innerHTML=`
+    <div class="pz-topbar">
+      <div class="pz-brand">Quit <span>or Commit?</span></div>
+      <div class="pz-tag">Career Transition Evaluator — v4.0</div>
+    </div>
+    <div class="pz-hero">
+      <div class="pz-role">${userName} — ${dateStr}</div>
+      <div class="pz-title">${role.name}</div>
+      <div class="pz-sub">Partner → Executive Transition Analysis</div>
+      <div class="pz-score-row">
+        <div class="pz-score-num">${total}</div>
+        <div class="pz-score-meta">
+          <div class="pz-verdict">${verdict}</div>
+          <div class="pz-verdict-sub">${sub}</div>
+        </div>
+      </div>
+    </div>
+    <div class="pz-body">
+      <div class="pz-section">
+        <div class="pz-section-title">Dimension Breakdown</div>
+        ${dimRows}
+      </div>
+      <div class="pz-section">
+        <div class="pz-section-title">Notes</div>
+        ${notesHTML}
+      </div>
+      <div class="pz-section">
+        <div class="pz-section-title">AI Analysis — claude-sonnet-4-6</div>
+        ${aiHTML}
+      </div>
+    </div>
+    <div class="pz-footer">
+      <div class="pz-footer-brand">Quit <span>or Commit?</span></div>
+      <div class="pz-footer-note">Generated ${dateStr} · Career Transition Evaluator v4.0</div>
+    </div>
+  `;
+
+  setTimeout(()=>window.print(), 100);
+}
 </script>
 </body>
 </html>
