@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bunker Bay Dreaming</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ocean-deep:   #061a2e;
+    --ocean-mid:    #0a3358;
+    --ocean-bright: #0e6ea6;
+    --teal:         #2ec4b6;
+    --sand:         #f4d6a0;
+    --coral:        #e76f51;
+    --amber:        #f4a261;
+    --gold:         #e9c46a;
+    --sky:          #90e0ef;
+    --foam:         rgba(255,255,255,0.07);
+    --foam-border:  rgba(255,255,255,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: linear-gradient(160deg, var(--ocean-deep) 0%, var(--ocean-mid) 45%, var(--ocean-bright) 80%, var(--teal) 100%);
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    color: #f0f9ff;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated wave canvas ── */
+  #wave-canvas {
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 160px;
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  /* ── Grain overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  .app-wrap {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
+    padding: 28px 16px 100px;
+  }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 5px; color: var(--sky);
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 8vw, 4rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--sky) 45%, var(--sand) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -1px; line-height: 1.05;
+    animation: titleIn 0.8s ease both;
+  }
+  @keyframes titleIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: none; } }
+  .header-sub {
+    color: rgba(255,255,255,0.38); font-size: 13px; margin-top: 6px;
+    letter-spacing: 1.5px; font-weight: 300;
+  }
+  .year-badge {
+    display: inline-block; margin-top: 10px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 4px 16px;
+    font-size: 12px; color: var(--sand); letter-spacing: 2px;
+    font-family: 'Playfair Display', serif; font-style: italic;
+  }
+
+  /* ── API Key bar ── */
+  .api-bar {
+    background: rgba(6,26,46,0.7); border: 1px solid var(--foam-border);
+    border-radius: 16px; padding: 14px 16px;
+    display: flex; gap: 10px; align-items: center;
+    margin-bottom: 20px; backdrop-filter: blur(16px);
+  }
+  .api-bar label { font-size: 12px; color: var(--sky); white-space: nowrap; font-weight: 600; letter-spacing: 0.5px; }
+  .api-bar input {
+    flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px; padding: 9px 14px; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none;
+    transition: border 0.2s;
+  }
+  .api-bar input:focus { border-color: var(--teal); }
+  .api-status {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.2); transition: background 0.3s;
+  }
+  .api-status.ok { background: #06d6a0; box-shadow: 0 0 8px #06d6a060; }
+
+  /* ── People row ── */
+  .people-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 20px;
+  }
+  .person-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 10px 14px; min-width: 70px;
+    background: var(--foam); border: 2px solid var(--foam-border);
+    border-radius: 18px; cursor: pointer; transition: all 0.22s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .person-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .person-btn.active { transform: translateY(-3px) scale(1.05); }
+  .person-btn .emoji  { font-size: 24px; }
+  .person-btn .pname  { font-size: 12px; font-weight: 600; }
+  .person-btn .pbar-wrap { width: 44px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .person-btn .pbar   { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .add-person-btn {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 70px; padding: 10px 14px;
+    background: transparent; border: 2px dashed rgba(255,255,255,0.18);
+    border-radius: 18px; cursor: pointer; color: rgba(255,255,255,0.35);
+    font-size: 22px; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .add-person-btn:hover { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.6); }
+
+  /* ── Add person panel ── */
+  .add-panel {
+    background: rgba(6,26,46,0.92); border: 1px solid var(--foam-border);
+    border-radius: 18px; padding: 18px; margin-bottom: 16px;
+    backdrop-filter: blur(20px); display: none;
+    animation: slideDown 0.2s ease;
+  }
+  .add-panel.open { display: block; }
+  @keyframes slideDown { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: none; } }
+  .add-panel label { font-size: 12px; color: var(--sky); display: block; margin-bottom: 10px; font-weight: 600; }
+  .add-panel .add-row { display: flex; gap: 8px; }
+  .add-panel input {
+    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px; padding: 10px 14px; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+  }
+  .btn-teal {
+    background: var(--teal); border: none; border-radius: 10px;
+    padding: 10px 18px; color: var(--ocean-deep); font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px;
+    transition: opacity 0.2s;
+  }
+  .btn-teal:hover { opacity: 0.85; }
+  .btn-ghost {
+    background: transparent; border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px; padding: 10px 14px; color: rgba(255,255,255,0.45);
+    cursor: pointer; font-size: 14px; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.35); color: rgba(255,255,255,0.7); }
+
+  /* ── Nav tabs ── */
+  .nav-tabs {
+    display: flex; gap: 5px; margin-bottom: 18px;
+    background: rgba(255,255,255,0.05); border-radius: 14px; padding: 4px;
+  }
+  .nav-tab {
+    flex: 1; padding: 10px 6px; background: transparent; border: none; border-radius: 10px;
+    color: rgba(255,255,255,0.4); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 400; transition: all 0.2s; letter-spacing: 0.2px;
+  }
+  .nav-tab.active { background: rgba(255,255,255,0.12); color: #fff; font-weight: 600; }
+
+  /* ══ VIEWS ══ */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+  /* ── Grid view ── */
+  .cat-grid { display: grid; gap: 10px; }
+  .cat-grid.row3 { grid-template-columns: repeat(3,1fr); }
+  .cat-grid.row3-2 { grid-template-columns: repeat(3,1fr); }
+  .cat-grid.row1 { grid-template-columns: 1fr; }
+  .cat-card {
+    background: var(--foam); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 16px; cursor: pointer;
+    transition: all 0.22s; backdrop-filter: blur(10px);
+  }
+  .cat-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .cat-card-head { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; }
+  .cat-card-icon { font-size: 18px; }
+  .cat-card-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; line-height: 1.2;
+  }
+  .cat-card-body { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.55; }
+  .cat-card-empty { font-size: 12px; color: rgba(255,255,255,0.2); font-style: italic; }
+  .coach-btn-main {
+    width: 100%; margin-top: 10px; padding: 15px;
+    background: linear-gradient(135deg, var(--coral)cc, var(--ocean-bright)cc);
+    border: none; border-radius: 16px; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.4px; transition: opacity 0.2s;
+  }
+  .coach-btn-main:hover { opacity: 0.88; }
+
+  /* ── Edit view ── */
+  .cat-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cat-pill {
+    padding: 7px 13px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.45); transition: all 0.2s;
+  }
+  .cat-pill.active { }
+  .edit-card {
+    background: var(--foam); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 20px; backdrop-filter: blur(12px);
+    margin-bottom: 14px;
+  }
+  .edit-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .edit-card-icon { font-size: 26px; }
+  .edit-card-title { font-size: 16px; font-weight: 700; }
+  .edit-card-sub   { font-size: 12px; color: rgba(255,255,255,0.38); margin-top: 2px; }
+  textarea.goal-input {
+    width: 100%; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14); border-radius: 12px;
+    padding: 14px; color: #fff; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; line-height: 1.65; outline: none; resize: vertical;
+    transition: border 0.2s; min-height: 100px;
+  }
+  textarea.goal-input:focus { border-color: var(--teal); }
+  .deep-dive-btn {
+    margin-top: 10px; padding: 10px 18px;
+    border-radius: 10px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    border-width: 1px; border-style: solid;
+  }
+  .deep-dive-btn:hover { opacity: 0.78; }
+  .all-goals-list { margin-top: 6px; }
+  .all-goals-list h4 {
+    font-size: 10px; color: rgba(255,255,255,0.28); text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600;
+  }
+  .goal-mini {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 11px 14px; margin-bottom: 7px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; cursor: pointer; transition: background 0.2s;
+  }
+  .goal-mini:hover { background: rgba(255,255,255,0.07); }
+  .goal-mini-icon { font-size: 14px; margin-top: 2px; flex-shrink: 0; }
+  .goal-mini-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .goal-mini-text { font-size: 12px; color: rgba(255,255,255,0.55); }
+  .goal-mini-text.empty { color: rgba(255,255,255,0.2); font-style: italic; }
+
+  /* ── Coach view ── */
+  .coach-panel {
+    background: rgba(6,26,46,0.72); border: 1px solid rgba(46,196,182,0.28);
+    border-radius: 20px; padding: 20px; margin-bottom: 14px;
+    backdrop-filter: blur(22px); min-height: 120px;
+  }
+  .coach-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .coach-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--ocean-bright));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(46,196,182,0.3);
+  }
+  .coach-name { font-size: 16px; font-weight: 700; color: var(--teal); }
+  .coach-subtitle { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+  .coach-body {
+    font-size: 14px; line-height: 1.78; color: rgba(255,255,255,0.82);
+    white-space: pre-wrap;
+  }
+  .coach-body b, .coach-body strong { color: var(--teal); font-weight: 700; }
+  .coach-placeholder { color: rgba(255,255,255,0.35); font-size: 13px; font-style: italic; }
+  .spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid rgba(46,196,182,0.25);
+    border-top-color: var(--teal);
+    animation: spin 0.9s linear infinite; margin: 20px auto;
+    display: none;
+  }
+  .spinner.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .coach-actions { display: flex; flex-direction: column; gap: 9px; }
+  .coach-action-main {
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(46,196,182,0.22), rgba(14,110,166,0.22));
+    border: 1px solid rgba(46,196,182,0.38); border-radius: 14px;
+    color: var(--teal); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; text-align: left; transition: opacity 0.2s; width: 100%;
+  }
+  .coach-action-main:hover { opacity: 0.8; }
+  .coach-action-sub { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.38); margin-top: 3px; }
+  .cat-action-btn {
+    padding: 11px 15px; background: rgba(255,255,255,0.04);
+    border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; text-align: left; display: flex; gap: 9px; align-items: center;
+    width: 100%; transition: opacity 0.2s; border-width: 1px; border-style: solid;
+  }
+  .cat-action-btn:hover { opacity: 0.75; }
+  .cat-action-icon { font-size: 16px; flex-shrink: 0; }
+  .cat-action-label { display: block; }
+  .cat-action-preview { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.3); margin-top: 2px; display: block; }
+
+  /* ── Session history ── */
+  .history-wrap { margin-top: 20px; }
+  .history-title { font-size: 10px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .history-item {
+    padding: 10px 14px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;
+    margin-bottom: 6px; cursor: pointer; transition: background 0.2s;
+  }
+  .history-item:hover { background: rgba(255,255,255,0.07); }
+  .history-meta { font-size: 10px; color: rgba(255,255,255,0.28); margin-bottom: 3px; }
+  .history-snippet { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+  /* ── SMS / All button strip ── */
+  .sms-strip {
+    background: rgba(6,26,46,0.6); border: 1px solid var(--foam-border);
+    border-radius: 18px; padding: 16px 18px; margin-bottom: 20px;
+    backdrop-filter: blur(16px);
+  }
+  .sms-strip-title { font-size: 11px; color: var(--sky); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+  .sms-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sms-btn {
+    padding: 8px 16px; border-radius: 10px; border: 1px solid;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .sms-btn:hover { opacity: 0.75; transform: translateY(-1px); }
+  .sms-btn.all-btn {
+    background: linear-gradient(135deg, var(--teal)44, var(--coral)44);
+    border-color: rgba(255,255,255,0.25); color: #fff; font-size: 13px; font-weight: 700;
+    padding: 9px 20px;
+  }
+
+  /* ── Footer ── */
+  .footer { text-align: center; margin-top: 44px; }
+  .footer p { font-size: 11px; color: rgba(255,255,255,0.16); letter-spacing: 2.5px; text-transform: uppercase; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .cat-grid.row3, .cat-grid.row3-2 { grid-template-columns: repeat(2,1fr); }
+    .cat-grid.row1 { grid-template-columns: 1fr; }
+    .header-title { font-size: 2.6rem; }
+  }
+  @media (max-width: 380px) {
+    .cat-grid.row3, .cat-grid.row3-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="wave-canvas"></canvas>
+
+<div class="app-wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eyebrow">🌊 Bunker Bay</div>
+    <h1 class="header-title">Dreaming</h1>
+    <p class="header-sub">family &amp; friends · 7 areas · good vibes</p>
+    <span class="year-badge">The Cuff Fam · Est. 2021</span>
+  </div>
+
+  <!-- API KEY BAR -->
+  <div class="api-bar">
+    <label for="api-key-input">🔑 API Key</label>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" oninput="onApiKeyChange(this.value)"/>
+    <div class="api-status" id="api-status-dot"></div>
+  </div>
+
+  <!-- SMS STRIP -->
+  <div class="sms-strip">
+    <div class="sms-strip-title">📱 Send Goals Summary</div>
+    <div class="sms-btns" id="sms-btns"></div>
+  </div>
+
+  <!-- PEOPLE ROW -->
+  <div class="people-row" id="people-row"></div>
+
+  <!-- ADD PERSON PANEL -->
+  <div class="add-panel" id="add-panel">
+    <label>Add a crew member 🤙</label>
+    <div class="add-row">
+      <input type="text" id="new-person-input" placeholder="Their name..." onkeydown="if(event.key==='Enter')addPerson()"/>
+      <button class="btn-teal" onclick="addPerson()">Add</button>
+      <button class="btn-ghost" onclick="closeAddPanel()">✕</button>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-view="grid" onclick="switchView('grid')">🗺️ Overview</button>
+    <button class="nav-tab" data-view="edit" onclick="switchView('edit')">✏️ Set Goals</button>
+    <button class="nav-tab" data-view="coach" onclick="switchView('coach')">🤙 Bay Breeze</button>
+  </div>
+
+  <!-- ═══ GRID VIEW ═══ -->
+  <div class="view active" id="view-grid">
+    <div class="cat-grid row3" id="grid-row1"></div>
+    <div class="cat-grid row3-2" id="grid-row2" style="margin-top:10px"></div>
+    <div class="cat-grid row1" id="grid-row3" style="margin-top:10px"></div>
+    <button class="coach-btn-main" onclick="callCoach('analyse')">🌊 Get Bay Breeze coaching for <span id="grid-coach-name"></span></button>
+  </div>
+
+  <!-- ═══ EDIT VIEW ═══ -->
+  <div class="view" id="view-edit">
+    <div class="cat-pills" id="cat-pills"></div>
+    <div class="edit-card" id="edit-card"></div>
+    <div class="all-goals-list">
+      <h4>All of <span id="edit-person-name"></span>'s goals</h4>
+      <div id="other-goals-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══ COACH VIEW ═══ -->
+  <div class="view" id="view-coach">
+    <div class="coach-panel">
+      <div class="coach-head">
+        <div class="coach-avatar">🏄</div>
+        <div>
+          <div class="coach-name">Bay Breeze</div>
+          <div class="coach-subtitle">Life Coach · Bunker Bay</div>
+        </div>
+      </div>
+      <div class="spinner" id="coach-spinner"></div>
+      <div class="coach-body" id="coach-body">
+        <span class="coach-placeholder">Hit a button below to get the vibes flowing 🌊</span>
+      </div>
+    </div>
+    <div class="coach-actions">
+      <button class="coach-action-main" onclick="callCoach('analyse')">
+        🌊 Full life audit for <span class="coach-person-name-label"></span>
+        <div class="coach-action-sub">Covers all 7 goal areas — strengths, blind spots, power moves</div>
+      </button>
+      <div id="cat-action-btns"></div>
+    </div>
+    <div class="history-wrap" id="history-wrap" style="display:none">
+      <div class="history-title">Previous sessions</div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <div class="footer"><p>🌊 Bunker Bay Dreaming · The Cuff Fam · <span id="year"></span></p></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+const CATEGORIES = [
+  { id:'health_body',   label:'Health & Body',       icon:'🏄', color:'#00b4d8' },
+  { id:'health_mental', label:'Mental Health',        icon:'🧠', color:'#48cae4' },
+  { id:'work',          label:'Work & Uni',           icon:'🌴', color:'#2ec4b6' },
+  { id:'finance',       label:'Finance',              icon:'🐚', color:'#f4a261' },
+  { id:'relationships', label:'Relationships & BOD',  icon:'🌊', color:'#e76f51' },
+  { id:'friendships',   label:'Friendships',          icon:'🤙', color:'#e9c46a' },
+  { id:'random',        label:'Random & Dreams',      icon:'⭐', color:'#a8dadc' },
+];
+
+const GRID_ROWS = [
+  ['health_body','health_mental','work'],
+  ['finance','relationships','friendships'],
+  ['random'],
+];
+
+const PERSON_EMOJIS  = ['🎯','🌟','🦀','🐠','🌻','⛵','🎨','🦋','🌈','🔥'];
+const PERSON_COLORS  = ['#48cae4','#06d6a0','#ffd166','#ef476f','#7b2d8b','#3a86ff','#ff6b6b','#c77dff'];
+const PHONE_NUMBERS  = {
+  luke:   '+61400000001',
+  sage:   '+61400000002',
+  sienna: '+61400000003',
+  tami:   '+61400000004',
+  brad:   '+61400000005',
+};
+
+let people = [
+  { id:'luke',   name:'Luke',   emoji:'🤙', color:'#0077b6', phone:PHONE_NUMBERS.luke   },
+  { id:'sage',   name:'Sage',   emoji:'🌿', color:'#2a9d8f', phone:PHONE_NUMBERS.sage   },
+  { id:'sienna', name:'Sienna', emoji:'✨', color:'#e9c46a', phone:PHONE_NUMBERS.sienna },
+  { id:'tami',   name:'Tami',   emoji:'🌺', color:'#f4a261', phone:PHONE_NUMBERS.tami   },
+  { id:'brad',   name:'Brad',   emoji:'🏄', color:'#e76f51', phone:PHONE_NUMBERS.brad   },
+];
+
+const SEED_GOALS = {
+  luke:{
+    health_body:   'Schedule 5 bootcamps, yoga/mobility',
+    health_mental: 'Decrease negative judgement, consistent positive mindset',
+    work:          'Turnaround goals, sell feedbackle, believe in the process',
+    finance:       'Pay down debt, increase $30k, get finance advice',
+    relationships: 'Expand network, find golden nugget, toitoi weekend',
+    friendships:   'Less but deeper, call & nurture, 1 per kid',
+    random:        'Find the golden nugget',
+  },
+  sage:{
+    health_body:   'Lose 10kg, fit with dad, pigeon pose, stop meds, surf walk',
+    health_mental: 'Understand why, consistent positive mindset',
+    work:          'Sustainable part time, turn part time into 5 units @ uni',
+    finance:       'Save 15% of income, stream saved, move out of home?',
+    relationships: 'Effort into relationships, find golden nuggets via POC, 100 unknown connections',
+    friendships:   'Effort into ++ relationships, find golden nuggets',
+    random:        'Expand network, 100 unknown connections',
+  },
+  sienna:{
+    health_body:   '300 club, 21km with Mum, massage up, 10 pull ups, 50 woos with Dad',
+    health_mental: 'Consistent positive, massage up',
+    work:          'Destinations — 1 in 8 units',
+    finance:       'Save $40 p/day, cut friend forward, if cal costs more $30 sell',
+    relationships: 'Consolidate friend forward, hang out with Sharon, SAAS more, 5 family holidays',
+    friendships:   'Consolidate, hang out with Sharon SAAS more',
+    random:        '5 family holidays, toitoi weekend',
+  },
+  tami:{
+    health_body:   '21km run, hot yoga, eyes/skin',
+    health_mental: 'Understand why — do a course',
+    work:          'Do a course, maintain art, proper business setup, show revenue',
+    finance:       'New car, patio on art room, scholarships',
+    relationships: '5 family holidays, work kids list, give/month God — Adele, Sharon',
+    friendships:   'Give/month God, Adele, Sharon — work kids list',
+    random:        'New car, patio on art room',
+  },
+  brad:{
+    health_body:   'Lose 10kg, hot yoga, 100km running, 100km swim, 2x neck sessions, more surf, SDO club',
+    health_mental: 'Reduce NEG = it, 3x kl sessions, join connected minds, BOD',
+    work:          '3,14 EP @ Jan, 2 new decades, 4 days/week working, 25 team hots',
+    finance:       'Pay tax super, 100k in super, 100k in saving, new water tank, new sewerage, pet/water, finish decks',
+    relationships: '5 family holidays, S new connections, reduce NEG = it, BOD',
+    friendships:   'S new connections, 3x kl sessions, join connected minds',
+    random:        'BOD, sessions join connected minds, 3x kl',
+  },
+};
+
+let goals = {};
+people.forEach(p => {
+  goals[p.id] = {};
+  CATEGORIES.forEach(c => { goals[p.id][c.id] = SEED_GOALS[p.id]?.[c.id] || ''; });
+});
+
+let activePersonId = 'brad';
+let activeCatId    = 'health_body';
+let apiKey         = '';
+let coachHistory   = {};
+
+// ══════════════════════════════════════
+//  WAVE CANVAS
+// ══════════════════════════════════════
+const canvas = document.getElementById('wave-canvas');
+const ctx    = canvas.getContext('2d');
+let wt = 0;
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = 160;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function drawWaves() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  [[0.008,0.22,18,'rgba(255,255,255,0.07)'],[0.012,0.18,28,'rgba(255,255,255,0.04)']].forEach(([freq,amp,phase,fill]) => {
+    ctx.beginPath();
+    ctx.moveTo(0,H);
+    for(let x=0;x<=W;x+=2){
+      const y = H*0.5 + Math.sin(x*freq + wt + phase)*H*amp + Math.sin(x*0.006+wt*0.7)*H*0.08;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill();
+  });
+  wt += 0.025;
+  requestAnimationFrame(drawWaves);
+}
+drawWaves();
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Load saved API key
+const savedKey = localStorage.getItem('bb_api_key') || '';
+if (savedKey) {
+  apiKey = savedKey;
+  document.getElementById('api-key-input').value = savedKey;
+  document.getElementById('api-status-dot').className = 'api-status' + (savedKey.startsWith('sk-ant-') ? ' ok' : '');
+}
+
+renderPeopleRow();
+renderSmsStrip();
+renderGrid();
+renderEditView();
+renderCoachActions();
+
+// ══════════════════════════════════════
+//  API KEY
+// ══════════════════════════════════════
+function onApiKeyChange(val) {
+  apiKey = val.trim();
+  localStorage.setItem('bb_api_key', apiKey);
+  document.getElementById('api-status-dot').className = 'api-status' + (apiKey.startsWith('sk-ant-') ? ' ok' : '');
+}
+
+// ══════════════════════════════════════
+//  PEOPLE ROW
+// ══════════════════════════════════════
+function completionScore(personId) {
+  const filled = CATEGORIES.filter(c => (goals[personId]?.[c.id] || '').trim()).length;
+  return Math.round((filled / CATEGORIES.length) * 100);
+}
+
+function renderPeopleRow() {
+  const row = document.getElementById('people-row');
+  row.innerHTML = '';
+  people.forEach(p => {
+    const score = completionScore(p.id);
+    const isActive = p.id === activePersonId;
+    const btn = document.createElement('button');
+    btn.className = 'person-btn' + (isActive ? ' active' : '');
+    btn.style.borderColor = isActive ? p.color : 'var(--foam-border)';
+    btn.style.background  = isActive ? `linear-gradient(135deg,${p.color}44,${p.color}22)` : 'var(--foam)';
+    btn.style.boxShadow   = isActive ? `0 4px 22px ${p.color}44` : 'none';
+    btn.innerHTML = `
+      <span class="emoji">${p.emoji}</span>
+      <span class="pname" style="color:${isActive?p.color:'rgba(255,255,255,0.7)'}">${p.name}</span>
+      <div class="pbar-wrap"><div class="pbar" style="width:${score}%;background:${p.color}"></div></div>`;
+    btn.onclick = () => selectPerson(p.id);
+    row.appendChild(btn);
+  });
+  // + button
+  const add = document.createElement('button');
+  add.className = 'add-person-btn';
+  add.textContent = '+';
+  add.onclick = () => document.getElementById('add-panel').classList.add('open');
+  row.appendChild(add);
+}
+
+function selectPerson(id) {
+  activePersonId = id;
+  document.getElementById('coach-body').innerHTML = '<span class="coach-placeholder">Hit a button below to get the vibes flowing 🌊</span>';
+  renderPeopleRow();
+  renderGrid();
+  renderEditView();
+  renderCoachActions();
+  renderSmsStrip();
+  document.querySelector('.coach-person-name-label') && document.querySelectorAll('.coach-person-name-label').forEach(el => el.textContent = activePerson().name);
+  document.getElementById('grid-coach-name').textContent = activePerson().name;
+}
+
+function activePerson() { return people.find(p => p.id === activePersonId); }
+
+// ══════════════════════════════════════
+//  ADD PERSON
+// ══════════════════════════════════════
+function addPerson() {
+  const name = document.getElementById('new-person-input').value.trim();
+  if (!name) return;
+  const id = name.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now();
+  const newP = {
+    id, name,
+    emoji: PERSON_EMOJIS[Math.floor(Math.random()*PERSON_EMOJIS.length)],
+    color: PERSON_COLORS[Math.floor(Math.random()*PERSON_COLORS.length)],
+    phone: '',
+  };
+  people.push(newP);
+  goals[id] = {};
+  CATEGORIES.forEach(c => { goals[id][c.id] = ''; });
+  closeAddPanel();
+  selectPerson(id);
+}
+
+function closeAddPanel() {
+  document.getElementById('add-panel').classList.remove('open');
+  document.getElementById('new-person-input').value = '';
+}
+
+// ══════════════════════════════════════
+//  SMS STRIP
+// ══════════════════════════════════════
+function buildSmsBody(personId) {
+  const p = people.find(x => x.id === personId);
+  const lines = [`🌊 Bunker Bay Dreaming — ${p.name}'s Goals ${new Date().getFullYear()}\n`];
+  CATEGORIES.forEach(c => {
+    const g = (goals[personId]?.[c.id] || '').trim();
+    if (g) lines.push(`${c.icon} ${c.label}:\n${g}`);
+  });
+  return encodeURIComponent(lines.join('\n\n'));
+}
+
+function buildAllSmsBody() {
+  const lines = [`🌊 Bunker Bay Dreaming — Full Crew Goals ${new Date().getFullYear()}\n`];
+  people.forEach(p => {
+    lines.push(`── ${p.emoji} ${p.name} ──`);
+    CATEGORIES.forEach(c => {
+      const g = (goals[p.id]?.[c.id] || '').trim();
+      if (g) lines.push(`${c.icon} ${c.label}: ${g}`);
+    });
+    lines.push('');
+  });
+  return encodeURIComponent(lines.join('\n'));
+}
+
+function renderSmsStrip() {
+  const container = document.getElementById('sms-btns');
+  container.innerHTML = '';
+
+  // All button — opens iOS group message (sms: with all numbers joined by comma)
+  const allNumbers = people.map(p => p.phone).filter(Boolean).join(',');
+  const allBody    = buildAllSmsBody();
+  const allBtn     = document.createElement('a');
+  allBtn.className = 'sms-btn all-btn';
+  allBtn.textContent = '🌊 All';
+  allBtn.href = `sms:${allNumbers}${allNumbers ? '?&body=' + allBody : '?body=' + allBody}`;
+  container.appendChild(allBtn);
+
+  // Individual buttons
+  people.forEach(p => {
+    const body = buildSmsBody(p.id);
+    const btn  = document.createElement('a');
+    btn.className = 'sms-btn';
+    btn.style.cssText = `background:${p.color}22;border-color:${p.color}66;color:${p.color}`;
+    btn.textContent = `${p.emoji} ${p.name}`;
+    btn.href = `sms:${p.phone || ''}?body=${body}`;
+    container.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════
+//  GRID VIEW
+// ══════════════════════════════════════
+function renderGrid() {
+  document.getElementById('grid-coach-name').textContent = activePerson().name;
+  GRID_ROWS.forEach((row, ri) => {
+    const container = document.getElementById(`grid-row${ri+1}`);
+    container.innerHTML = '';
+    row.forEach(catId => {
+      const cat  = CATEGORIES.find(c => c.id === catId);
+      const text = (goals[activePersonId]?.[catId] || '').trim();
+      const card = document.createElement('div');
+      card.className = 'cat-card';
+      card.style.borderColor = cat.color + '33';
+      card.innerHTML = `
+        <div class="cat-card-head">
+          <span class="cat-card-icon">${cat.icon}</span>
+          <span class="cat-card-label" style="color:${cat.color}">${cat.label}</span>
+        </div>
+        <div class="${text ? 'cat-card-body' : 'cat-card-empty'}">${text ? (text.length>88?text.slice(0,88)+'…':text) : 'Tap to add goals'}</div>`;
+      card.onclick = () => { activeCatId = catId; switchView('edit'); };
+      container.appendChild(card);
+    });
+  });
+}
+
+// ══════════════════════════════════════
+//  EDIT VIEW
+// ══════════════════════════════════════
+function renderEditView() {
+  document.getElementById('edit-person-name').textContent = activePerson().name;
+  renderCatPills();
+  renderEditCard();
+  renderOtherGoals();
+}
+
+function renderCatPills() {
+  const container = document.getElementById('cat-pills');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill' + (cat.id === activeCatId ? ' active' : '');
+    btn.style.background    = cat.id === activeCatId ? cat.color+'33' : 'rgba(255,255,255,0.05)';
+    btn.style.borderColor   = cat.id === activeCatId ? cat.color : 'rgba(255,255,255,0.1)';
+    btn.style.color         = cat.id === activeCatId ? cat.color : 'rgba(255,255,255,0.45)';
+    btn.innerHTML = `${cat.icon} ${cat.label}`;
+    btn.onclick = () => { activeCatId = cat.id; renderCatPills(); renderEditCard(); renderOtherGoals(); };
+    container.appendChild(btn);
+  });
+}
+
+function renderEditCard() {
+  const cat  = CATEGORIES.find(c => c.id === activeCatId);
+  const val  = goals[activePersonId]?.[activeCatId] || '';
+  const card = document.getElementById('edit-card');
+  card.style.borderColor = cat.color + '44';
+  card.innerHTML = `
+    <div class="edit-card-head">
+      <span class="edit-card-icon">${cat.icon}</span>
+      <div>
+        <div class="edit-card-title" style="color:${cat.color}">${cat.label}</div>
+        <div class="edit-card-sub">${activePerson().name}'s goals</div>
+      </div>
+    </div>
+    <textarea class="goal-input" id="goal-textarea" placeholder="What does ${activePerson().name} want to achieve?\n\nThe ocean rewards those with a clear course 🌊" rows="5">${val}</textarea>
+    <br/>
+    <button class="deep-dive-btn" style="background:${cat.color}33;border-color:${cat.color};color:${cat.color}" onclick="callCoach('deep')">⚡ Deep dive this goal with Bay Breeze</button>`;
+  document.getElementById('goal-textarea').oninput = function() {
+    if (!goals[activePersonId]) goals[activePersonId] = {};
+    goals[activePersonId][activeCatId] = this.value;
+    renderGrid();
+    renderOtherGoals();
+    renderPeopleRow();
+    renderSmsStrip();
+  };
+}
+
+function renderOtherGoals() {
+  const container = document.getElementById('other-goals-list');
+  container.innerHTML = '';
+  CATEGORIES.filter(c => c.id !== activeCatId).forEach(cat => {
+    const text = (goals[activePersonId]?.[cat.id] || '').trim();
+    const row  = document.createElement('div');
+    row.className = 'goal-mini';
+    row.innerHTML = `
+      <span class="goal-mini-icon">${cat.icon}</span>
+      <div>
+        <div class="goal-mini-cat" style="color:${cat.color}">${cat.label}</div>
+        <div class="goal-mini-text ${text?'':'empty'}">${text || 'Not set yet'}</div>
+      </div>`;
+    row.onclick = () => { activeCatId = cat.id; renderCatPills(); renderEditCard(); renderOtherGoals(); };
+    container.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════
+//  COACH VIEW
+// ══════════════════════════════════════
+function renderCoachActions() {
+  document.querySelectorAll('.coach-person-name-label').forEach(el => el.textContent = activePerson().name);
+  const container = document.getElementById('cat-action-btns');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const preview = (goals[activePersonId]?.[cat.id] || '').trim();
+    const btn = document.createElement('button');
+    btn.className = 'cat-action-btn';
+    btn.style.borderColor = cat.color + '33';
+    btn.style.color       = cat.color;
+    btn.innerHTML = `
+      <span class="cat-action-icon">${cat.icon}</span>
+      <div>
+        <span class="cat-action-label">Deep dive: ${cat.label}</span>
+        <span class="cat-action-preview">${preview ? preview.slice(0,58)+'…' : 'No goals set yet'}</span>
+      </div>`;
+    btn.onclick = () => { activeCatId = cat.id; callCoach('deep'); };
+    container.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════
+//  CLAUDE API CALL
+// ══════════════════════════════════════
+async function callCoach(mode) {
+  if (!apiKey) {
+    document.getElementById('coach-body').innerHTML = '<span style="color:var(--amber)">🔑 Add your Anthropic API key above first!</span>';
+    switchView('coach');
+    return;
+  }
+
+  const person = activePerson();
+  const personGoals = CATEGORIES.map(c => ({ category: c.label, goal: (goals[person.id]?.[c.id]||'').trim() })).filter(g => g.goal);
+
+  if (!personGoals.length) {
+    document.getElementById('coach-body').innerHTML = '<span style="color:var(--amber)">No goals set yet — add some in Set Goals first!</span>';
+    switchView('coach');
+    return;
+  }
+
+  switchView('coach');
+  document.getElementById('coach-spinner').classList.add('show');
+  document.getElementById('coach-body').innerHTML = '';
+
+  const system = `You are "Bay Breeze" — a fun, warm, sun-soaked life coach who talks like you live at the beach but have a Harvard MBA and a psychology PhD. You use occasional surf/ocean metaphors naturally (not forced), you're encouraging, specific, and genuinely insightful. Give practical, actionable advice with a dash of wit. Keep responses energetic but not overwhelming — think good vibes meets real talk. Use emojis sparingly but meaningfully. Format with clear sections using **bold headers**.`;
+
+  const catLabel = CATEGORIES.find(c => c.id === activeCatId)?.label || '';
+  const prompt = mode === 'analyse'
+    ? `Meet ${person.name}! Their goals across 7 life areas:\n\n${personGoals.map(g=>`**${g.category}**: ${g.goal}`).join('\n\n')}\n\nGive a fun, insightful life coach analysis:\n1. **What's Pumping** 🤙 — celebrate what's strong about their goals\n2. **Blind Spots in the Water** 🦈 — gently flag gaps, vagueness, or conflicts\n3. **Power Moves** ⚡ — 3 specific, prioritised actions for biggest impact\n4. **The Vibe Check** — overall energy/balance in 2 sentences\n\nBe warm, specific to their actual goals, and fun!`
+    : `${person.name} is working on their ${catLabel} goals: "${goals[person.id]?.[activeCatId] || ''}"\n\nHelp them:\n- Make it more SMART (specific, measurable, achievable, realistic, time-bound)\n- Break into 3 clear milestone steps\n- Flag 1-2 obstacles and how to surf past them\n\nBeachy, fun, actionable!`;
+
+  try {
+    const res  = await fetch('https://still-wildflower-b4db-makuluizizwe.workers.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content?.find(b => b.type === 'text')?.text || "Couldn't catch that wave — try again!";
+    renderCoachResponse(text);
+    if (!coachHistory[person.id]) coachHistory[person.id] = [];
+    coachHistory[person.id].push({ mode, catId: activeCatId, text, ts: new Date().toLocaleTimeString() });
+    renderHistory();
+  } catch(err) {
+    renderCoachResponse(`🌊 Wave wipeout: ${err.message}`);
+  }
+
+  document.getElementById('coach-spinner').classList.remove('show');
+}
+
+function renderCoachResponse(text) {
+  // Parse **bold** to <strong>
+  const html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  document.getElementById('coach-body').innerHTML = html;
+}
+
+function renderHistory() {
+  const wrap = document.getElementById('history-wrap');
+  const list = document.getElementById('history-list');
+  const h    = coachHistory[activePersonId] || [];
+  if (h.length <= 1) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = '';
+  [...h].reverse().slice(1).forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    const catLabel = CATEGORIES.find(c=>c.id===item.catId)?.label || '';
+    div.innerHTML = `
+      <div class="history-meta">${item.mode==='analyse'?'Full audit':`${catLabel} deep dive`} · ${item.ts}</div>
+      <div class="history-snippet">${item.text.slice(0,80).replace(/\*\*/g,'')}…</div>`;
+    div.onclick = () => renderCoachResponse(item.text);
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════
+function switchView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view===id));
+  document.getElementById('view-'+id).classList.add('active');
+  if (id === 'edit')  renderEditView();
+  if (id === 'coach') { renderCoachActions(); renderHistory(); }
+  if (id === 'grid')  renderGrid();
+}
+</script>
+</body>
+</html>
